@@ -34,7 +34,7 @@ field_capacity <- field_capacity %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-# ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 5, height = 12) 
+ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 12, height = 7) 
 
 # Data manipulation for moisture measures ----
 # moisture probe measures need to be plotted against time to see the progression 
@@ -76,6 +76,24 @@ moisture <- moisture %>%
           legend.position = "bottom")) 
 
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
+
+(field_capacity_time_series <- ggplot(moisture, aes(date, drought_level_percent, color = drought_level)) +
+    geom_point() +
+    facet_wrap(~ soil_type, scales = "free_y") +
+    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
+    theme_bw() +
+    ylab("Moisture content (as a % of soil moisture content at field capacity)\n") +                             
+    xlab("\nDate") +
+    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 10),
+          axis.title = element_text(size = 12, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.text = element_text(size = 10, face = "italic"),  
+          legend.title = element_blank(),  # Removing the legend title 
+          legend.position = "bottom")) 
+
+# ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
 
 # Stats ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
