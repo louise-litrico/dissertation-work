@@ -59,6 +59,8 @@ moisture <- moisture %>%
 
 #ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 5, height = 12) 
 
+# I need to figure out a way to transform that moisture data into a percentage of the moisture content/field capacity of the soil types
+
 # Stats ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
 summary(ratio_model)
