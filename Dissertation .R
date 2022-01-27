@@ -8,6 +8,7 @@ library(readxl)
 ratio <- read_excel("root-shoot.xls")
 field_capacity <- read_excel("Field_capacity_diss.xlsx")
 moisture <- read_excel("moisture.xlsx")
+
 # Data manipulation ratio dataset ----
 # Rename columns and create factor levels for species, drought level and soil type #
 ratio <- rename(ratio, root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species)
@@ -23,7 +24,7 @@ field_capacity <- field_capacity %>%
 
 # checking for differences of soil moisture between soil types 
 (soil_moisture_boxplot <- ggplot(field_capacity, aes(soil_type, moisture_content_percent)) +
-    geom_boxplot() +
+    geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
     ylab("Moisture content (%)\n") +                             
     xlab("\nSoil Type")  +
@@ -39,23 +40,33 @@ field_capacity <- field_capacity %>%
 # moisture probe measures need to be plotted against time to see the progression 
 # before relating them to the soil moisture content 
 moisture <- moisture %>% 
-  mutate(soil_type = as_factor(soil_type), pot = as_factor(pot))
+  mutate(soil_type = as_factor(soil_type), pot = as_factor(pot)) %>% 
+  tidyr::separate(date, c("year", "month", "day"), sep = "-", remove = FALSE) %>% 
+  select(-year,-month) %>% 
+  mutate(day = as_factor(day)) %>% 
+  mutate(drought_level = case_when(grepl("1", pot) ~ "50%",
+                                   grepl("2", pot) ~ "75%",
+                                   grepl("3", pot) ~ "100%",
+                                   grepl("4", pot) ~ "50%",
+                                   grepl("5", pot) ~ "75%",
+                                   grepl("6", pot) ~ "100%")) %>% 
+  mutate(drought_level = as_factor(drought_level))
 
-(moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = soil_type)) +
-    geom_point() +
-    geom_smooth(method = "lm", aes(fill = soil_type)) +
+(moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = drought_level)) +
+    geom_point(size = 2) +
     facet_wrap(~ soil_type, scales = "free_y") +
+    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) +
     theme_bw() +
     ylab("Moisture content (%)\n") +                             
-    xlab("\nDate")  +
-    theme(axis.text.x = element_text(size = 12, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
-          axis.text.y = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                        
+    xlab("\nDay in August") +
+    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 10),
+          axis.title = element_text(size = 12, face = "plain"),                        
           panel.grid = element_blank(),  
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  # Adding a 1cm margin around the plot
-          legend.text = element_text(size = 12, face = "italic"),  
-          legend.title = element_blank(),  # Removing the legend title
-          legend.position = "none")) 
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.text = element_text(size = 10, face = "italic"),  
+          legend.title = element_blank(),  # Removing the legend title 
+          legend.position = "bottom")) 
 
 #ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 5, height = 12) 
 
