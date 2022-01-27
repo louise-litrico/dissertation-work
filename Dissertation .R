@@ -34,7 +34,7 @@ field_capacity <- field_capacity %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-#ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 5, height = 12) 
+# ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 5, height = 12) 
 
 # Data manipulation for moisture measures ----
 # moisture probe measures need to be plotted against time to see the progression 
@@ -43,22 +43,29 @@ moisture <- moisture %>%
   mutate(soil_type = as_factor(soil_type), pot = as_factor(pot)) %>% 
   tidyr::separate(date, c("year", "month", "day"), sep = "-", remove = FALSE) %>% 
   select(-year,-month) %>% 
-  mutate(day = as_factor(day)) %>% 
-  mutate(drought_level = case_when(grepl("1", pot) ~ "50%",
-                                   grepl("2", pot) ~ "75%",
-                                   grepl("3", pot) ~ "100%",
-                                   grepl("4", pot) ~ "50%",
-                                   grepl("5", pot) ~ "75%",
-                                   grepl("6", pot) ~ "100%")) %>% 
-  mutate(drought_level = as_factor(drought_level))
+  mutate(drought_level = case_when(pot == 1 ~ "50%",
+                                   pot == 2 ~ "75%",
+                                   pot == 3 ~ "100%",
+                                   pot == 4 ~ "50%",
+                                   pot == 5 ~ "75%",
+                                   pot == 6 ~ "100%")) %>% 
+  mutate(drought_level = as_factor(drought_level)) %>% 
+  mutate(soil_type_moisture = c(field_capacity$moisture_content_percent,
+                           field_capacity$moisture_content_percent,
+                           field_capacity$moisture_content_percent,
+                           field_capacity$moisture_content_percent,
+                           field_capacity$moisture_content_percent,
+                           field_capacity$moisture_content_percent,
+                           field_capacity$moisture_content_percent)) %>% 
+  mutate(drought_level_percent = (mean_moisture*100)/soil_type_moisture)
 
 (moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = drought_level)) +
-    geom_point(size = 2) +
+    geom_point() +
     facet_wrap(~ soil_type, scales = "free_y") +
-    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) +
+    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
     theme_bw() +
     ylab("Moisture content (%)\n") +                             
-    xlab("\nDay in August") +
+    xlab("\nDate") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
           axis.title = element_text(size = 12, face = "plain"),                        
@@ -68,9 +75,7 @@ moisture <- moisture %>%
           legend.title = element_blank(),  # Removing the legend title 
           legend.position = "bottom")) 
 
-#ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 5, height = 12) 
-
-# I need to figure out a way to transform that moisture data into a percentage of the moisture content/field capacity of the soil types
+# ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
 # Stats ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
