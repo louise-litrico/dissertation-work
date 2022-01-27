@@ -1,6 +1,4 @@
-# Set working directory #
-
-setwd("~/Desktop/R- Files")
+## DISSERTATION PROJECT ##
 
 # Libraries ----
 library(tidyverse)
@@ -35,6 +33,8 @@ field_capacity <- field_capacity %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
+#ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 5, height = 12) 
+
 # Data manipulation for moisture measures ----
 # moisture probe measures need to be plotted against time to see the progression 
 # before relating them to the soil moisture content 
@@ -56,6 +56,8 @@ moisture <- moisture %>%
           legend.text = element_text(size = 12, face = "italic"),  
           legend.title = element_blank(),  # Removing the legend title
           legend.position = "none")) 
+
+#ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 5, height = 12) 
 
 # Stats ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
