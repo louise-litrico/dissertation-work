@@ -3,6 +3,7 @@
 # Libraries ----
 library(tidyverse)
 library(readxl)
+library(vegan)
 
 # Import datasets ----
 ratio <- read_excel("root-shoot.xls")
@@ -12,14 +13,14 @@ moisture <- read_excel("moisture.xlsx")
 # Data manipulation ratio dataset ----
 # Rename columns and create factor levels for species, drought level and soil type #
 ratio <- rename(ratio, root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species)
-ratio <- mutate(ratio, species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil))
+ratio <- mutate(ratio, species = as.factor(species), drought_level = as.factor(drought), soil = as.factor(soil))
 
 # Data manipulation field capacity dataset ----
 # water content = grams of water contained in the soil per pot
 # moisture = mean and sd per pot measured by probe every other day in %
 field_capacity <- field_capacity %>% 
   mutate(soil_type = as_factor(soil_type), pot_number = as_factor(pot_number)) %>% 
-  mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soiil
+  mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soil
   mutate(moisture_content_percent = ((total_fresh/total_dry)-1)*100)  # new column with moisture content in %
 
 # checking for differences of soil moisture between soil types 
@@ -106,11 +107,18 @@ summary(ratio_model2)
 anova(ratio_model2)
 plot(ratio_model2)
 
+leaf_area_model <- lm(Leaf_area ~ drought*soil*species, data = ratio)
+summary(leaf_area_model)
+anova(leaf_area_model)
+plot(leaf_area_model)
+
 # Verification of assumptions # 
-ratio_resids <- resid(ratio_model2)
-shapiro.test(ratio_resids)
-bartlett.test(root_shoot ~ drought, data = ratio)
+leaf_resids <- resid(leaf_area_model)
+shapiro.test(leaf_resids)
+bartlett.test(Leaf_area ~ drought*soil*species, data = ratio)  # doesn't work with interaction terms? 
+
 
 # To see which drought level drives the significant results #
-ratio_aov <- aov(root_shoot ~ drought, data = ratio)
+ratio_aov <- aov(root_shoot ~ drought*soil*species, data = ratio)
 TukeyHSD(ratio_aov)
+
