@@ -3,17 +3,11 @@
 # Libraries ----
 library(tidyverse)
 library(readxl)
-library(vegan)
 
 # Import datasets ----
 ratio <- read_excel("root-shoot.xls")
 field_capacity <- read_excel("Field_capacity_diss.xlsx")
 moisture <- read_excel("moisture.xlsx")
-
-# Data manipulation ratio dataset ----
-# Rename columns and create factor levels for species, drought level and soil type #
-ratio <- rename(ratio, root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species)
-ratio <- mutate(ratio, species = as.factor(species), drought_level = as.factor(drought), soil = as.factor(soil))
 
 # Data manipulation field capacity dataset ----
 # water content = grams of water contained in the soil per pot
@@ -95,6 +89,26 @@ moisture <- moisture %>%
           legend.position = "bottom")) 
 
 # ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
+
+# Data manipulation ratio dataset ----
+# Rename columns and create factor levels for species, drought level and soil type #
+ratio <- ratio %>% 
+  rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
+  mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
+  filter(!root_shoot > 2.5)  # take out the outliers
+
+(ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
+    geom_boxplot(aes(color = drought)) +
+    theme_bw() +
+    ylab("Root/shoot ratio\n") +                             
+    xlab("\nDrought level")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "none"))
+
+ggsave(ratio_boxplot, file = "outputs/ratio_boxplot.png", width = 12, height = 7)
 
 # Stats ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
