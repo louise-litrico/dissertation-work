@@ -3,6 +3,7 @@
 # Libraries ----
 library(tidyverse)
 library(readxl)
+library(scales)
 
 # Import datasets ----
 ratio <- read_excel("root-shoot.xls")
@@ -125,7 +126,8 @@ plot(pot_model)
 ratio <- ratio %>% 
   rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
-  filter(!root_shoot > 2.5)  # take out the outliers
+  filter(!root_shoot > 2.5) %>%   # take out the outliers
+  mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))
 
 # Boxplot root/shoot and drought level ----
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
@@ -208,3 +210,18 @@ bartlett.test(Leaf_area ~ drought*soil*species, data = ratio)  # doesn't work wi
 ratio_aov <- aov(root_shoot ~ drought*soil*species, data = ratio)
 TukeyHSD(ratio_aov)
 
+# Trying a generalized linear model ----
+# check family 
+hist(ratio$root_shoot)
+
+generalized_ratio <- glm(root_shoot ~ drought*soil*species, family = gaussian, data = ratio)
+summary(generalized_ratio)
+
+generalized_ratio2 <- glm(root_shoot ~ drought*soil + species, family = gaussian, data = ratio)
+summary(generalized_ratio2)
+
+generalized_ratio3 <- glm(root_shoot ~ drought + soil + species, family = gaussian, data = ratio)
+summary(generalized_ratio3)
+
+AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
+# weird because I get different results than for the ANOVA...?
