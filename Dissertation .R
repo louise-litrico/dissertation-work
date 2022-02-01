@@ -78,13 +78,13 @@ moisture <- moisture %>%
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
 # Graph of field capacity % accross time ----
-(field_capacity_time_series <- ggplot(moisture, aes(date, drought_level_percent, color = drought_level, fill = drought_level)) +
+(field_capacity_time_series <- ggplot(moisture, aes(day, drought_level_percent, color = drought_level, fill = drought_level)) +
     geom_point() +
-    facet_wrap(~ soil_type, scales = "fixed") +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_bw() +
+    facet_wrap(~ soil_type, scales = "fixed") +
     ylab("Moisture content (% of soil moisture content at field capacity)\n") +                             
-    xlab("\nDate") +
+    xlab("\nTime (days since start of experiment)") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
           axis.title = element_text(size = 12, face = "plain"),                        
