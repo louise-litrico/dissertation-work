@@ -108,7 +108,33 @@ ratio <- ratio %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-ggsave(ratio_boxplot, file = "outputs/ratio_boxplot.png", width = 12, height = 7)
+# ggsave(ratio_boxplot, file = "outputs/ratio_boxplot.png", width = 12, height = 7)
+
+(ratio_soil_boxplot <- ggplot(ratio, aes(soil, root_shoot)) +
+    geom_boxplot(aes(color = soil)) +
+    theme_bw() +
+    ylab("Root/shoot ratio\n") +                             
+    xlab("\nSoil type")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "none"))
+
+# ggsave(ratio_soil_boxplot, file = "outputs/ratio_soil_boxplot.png", width = 12, height = 7)
+
+(ratio_drought_soil_boxplot <- ggplot(ratio, aes(drought, root_shoot, color = soil)) +
+    geom_boxplot() +
+    theme_bw() +
+    scale_color_manual(values = c("#CD8500", "#a9c3e1", "#ff4f4f"),
+                       name = "Soil type") +
+    ylab("Root/shoot ratio\n") +                             
+    xlab("\nDrought level")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "bottom"))
 
 # Stats ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
