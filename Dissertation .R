@@ -169,17 +169,30 @@ ratio <- ratio %>%
 
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
-# Stats ----
+# Stats ratio ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
 summary(ratio_model)
 anova(ratio_model)
 plot(ratio_model)
 
-ratio_model2 <- lm(root_shoot ~ drought, data = ratio)
+ratio_model2 <- lm(root_shoot ~ drought*species + soil, data = ratio)
 summary(ratio_model2)
 anova(ratio_model2)
 plot(ratio_model2)
 
+ratio_model3 <- lm(root_shoot ~ drought + species + soil, data = ratio)
+summary(ratio_model3)
+anova(ratio_model3)
+plot(ratio_model3)
+
+AIC(ratio_model, ratio_model2, ratio_model3)  # model 2 is much better (lower) than other 2 so explains variation the most 
+
+# Verification of assumptions
+ratio_resids <- resid(ratio_model2)
+shapiro.test(ratio_resids)
+bartlett.test(root_shoot ~ drought*species + soil, data = ratio)  # doesn't work with interaction terms? 
+
+# Stats leaf area ----
 leaf_area_model <- lm(Leaf_area ~ drought*soil*species, data = ratio)
 summary(leaf_area_model)
 anova(leaf_area_model)
@@ -189,7 +202,6 @@ plot(leaf_area_model)
 leaf_resids <- resid(leaf_area_model)
 shapiro.test(leaf_resids)
 bartlett.test(Leaf_area ~ drought*soil*species, data = ratio)  # doesn't work with interaction terms? 
-
 
 # To see which drought level drives the significant results #
 ratio_aov <- aov(root_shoot ~ drought*soil*species, data = ratio)
