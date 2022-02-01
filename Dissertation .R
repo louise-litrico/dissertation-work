@@ -38,6 +38,9 @@ moisture <- moisture %>%
   mutate(soil_type = as_factor(soil_type), pot = as_factor(pot)) %>% 
   tidyr::separate(date, c("year", "month", "day"), sep = "-", remove = FALSE) %>% 
   select(-year,-month) %>% 
+  mutate(day = case_when(day == "09" ~ 1, day == "11" ~ 3, day == "13" ~ 5, 
+                         day == "16" ~ 8, day == "18" ~ 10, day == "20" ~ 12, 
+                         day == "23" ~ 15)) %>% 
   mutate(drought_level = case_when(pot == 1 ~ "50%",
                                    pot == 2 ~ "75%",
                                    pot == 3 ~ "100%",
@@ -75,11 +78,12 @@ moisture <- moisture %>%
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
 # Graph of field capacity % accross time ----
-(field_capacity_time_series <- ggplot(moisture, aes(date(), drought_level_percent, color = drought_level)) +
+(field_capacity_time_series <- ggplot(moisture, aes(date, drought_level_percent, color = drought_level, fill = drought_level)) +
     geom_point() +
-    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
+    facet_wrap(~ soil_type, scales = "fixed") +
+    geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_bw() +
-    ylab("Moisture content (as a % of soil moisture content at field capacity)\n") +                             
+    ylab("Moisture content (% of soil moisture content at field capacity)\n") +                             
     xlab("\nDate") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
@@ -91,6 +95,7 @@ moisture <- moisture %>%
           legend.position = "bottom")) 
 
 # ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
+# whole figure tells us that there are both significant differences between soil types AND between drought treatments 
 
 # Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot ----
 subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & drought_level == "100%")
