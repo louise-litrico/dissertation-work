@@ -29,7 +29,7 @@ field_capacity <- field_capacity %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 12, height = 7) 
+# ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 12, height = 7) 
 
 # Data manipulation for moisture measures ----
 # moisture probe measures need to be plotted against time to see the progression 
@@ -90,6 +90,30 @@ moisture <- moisture %>%
 
 # ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
 
+# Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot
+subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & drought_level == "100%")
+
+(field_capacity_time_series <- ggplot(subset_moisture_soil_2, aes(date, drought_level_percent, color = pot)) +
+    geom_point() +
+    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
+    theme_bw() +
+    ylab("Moisture content (as a % of soil moisture content at field capacity)\n") +                             
+    xlab("\nDate") +
+    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 10),
+          axis.title = element_text(size = 12, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.text = element_text(size = 10, face = "italic"),  
+          legend.title = element_blank(),  # Removing the legend title 
+          legend.position = "bottom")) 
+
+pot_model <- lm(drought_level_percent ~ pot, data = subset_moisture_soil_2)
+summary(pot_model)
+anova(pot_model)
+plot(pot_model)
+
+
 # Data manipulation ratio dataset ----
 # Rename columns and create factor levels for species, drought level and soil type #
 ratio <- ratio %>% 
@@ -126,8 +150,6 @@ ratio <- ratio %>%
 (ratio_drought_soil_boxplot <- ggplot(ratio, aes(drought, root_shoot, color = soil)) +
     geom_boxplot() +
     theme_bw() +
-    scale_color_manual(values = c("#CD8500", "#a9c3e1", "#ff4f4f"),
-                       name = "Soil type") +
     ylab("Root/shoot ratio\n") +                             
     xlab("\nDrought level")  +
     theme(axis.text = element_text(size = 12),
@@ -135,6 +157,8 @@ ratio <- ratio %>%
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "bottom"))
+
+# ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
 # Stats ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
