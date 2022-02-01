@@ -17,7 +17,7 @@ field_capacity <- field_capacity %>%
   mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soil
   mutate(moisture_content_percent = ((total_fresh/total_dry)-1)*100)  # new column with moisture content in %
 
-# checking for differences of soil moisture between soil types 
+# Boxplot checking for differences of soil moisture between soil types ----
 (soil_moisture_boxplot <- ggplot(field_capacity, aes(soil_type, moisture_content_percent)) +
     geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
@@ -52,8 +52,10 @@ moisture <- moisture %>%
                            field_capacity$moisture_content_percent,
                            field_capacity$moisture_content_percent,
                            field_capacity$moisture_content_percent)) %>% 
-  mutate(drought_level_percent = (mean_moisture*100)/soil_type_moisture)
+  mutate(drought_level_percent = (mean_moisture*100)/soil_type_moisture) %>% 
+  filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
 
+# Graph of moisture accross time ----
 (moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = drought_level)) +
     geom_point() +
     facet_wrap(~ soil_type, scales = "free_y") +
@@ -72,9 +74,9 @@ moisture <- moisture %>%
 
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
-(field_capacity_time_series <- ggplot(moisture, aes(date, drought_level_percent, color = drought_level)) +
+# Graph of field capacity % accross time ----
+(field_capacity_time_series <- ggplot(moisture, aes(date(), drought_level_percent, color = drought_level)) +
     geom_point() +
-    facet_wrap(~ soil_type, scales = "free_y") +
     geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
     theme_bw() +
     ylab("Moisture content (as a % of soil moisture content at field capacity)\n") +                             
@@ -90,7 +92,7 @@ moisture <- moisture %>%
 
 # ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
 
-# Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot
+# Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot ----
 subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & drought_level == "100%")
 
 (field_capacity_time_series <- ggplot(subset_moisture_soil_2, aes(date, drought_level_percent, color = pot)) +
@@ -113,7 +115,6 @@ summary(pot_model)
 anova(pot_model)
 plot(pot_model)
 
-
 # Data manipulation ratio dataset ----
 # Rename columns and create factor levels for species, drought level and soil type #
 ratio <- ratio %>% 
@@ -121,6 +122,7 @@ ratio <- ratio %>%
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
   filter(!root_shoot > 2.5)  # take out the outliers
 
+# Boxplot root/shoot and drought level ----
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
     geom_boxplot(aes(color = drought)) +
     theme_bw() +
@@ -134,6 +136,7 @@ ratio <- ratio %>%
 
 # ggsave(ratio_boxplot, file = "outputs/ratio_boxplot.png", width = 12, height = 7)
 
+# Boxplot root/shoot and soil types ----
 (ratio_soil_boxplot <- ggplot(ratio, aes(soil, root_shoot)) +
     geom_boxplot(aes(color = soil)) +
     theme_bw() +
@@ -147,6 +150,7 @@ ratio <- ratio %>%
 
 # ggsave(ratio_soil_boxplot, file = "outputs/ratio_soil_boxplot.png", width = 12, height = 7)
 
+# Boxplot root/shoot + drought level + soil types ----
 (ratio_drought_soil_boxplot <- ggplot(ratio, aes(drought, root_shoot, color = soil)) +
     geom_boxplot() +
     theme_bw() +
