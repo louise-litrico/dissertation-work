@@ -191,6 +191,7 @@ AIC(ratio_model, ratio_model2, ratio_model3)  # model 2 is much better (lower) t
 ratio_resids <- resid(ratio_model2)
 shapiro.test(ratio_resids)
 bartlett.test(root_shoot ~ drought*species + soil, data = ratio)  # doesn't work with interaction terms? 
+fligner.test(root_shoot ~ drought*species + soil, data = ratio) 
 
 # Stats leaf area ----
 leaf_area_model <- lm(Leaf_area ~ drought*soil*species, data = ratio)
