@@ -169,17 +169,34 @@ ratio <- ratio %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-# Three plots for variation of rooot/shoot within species ----
-(ratio_parsley <- ggplot(ratio, aes(species == "Parsley", root_shoot)) +
-   geom_boxplot(aes(color = species)) +
+# Three plots for variation of root/shoot within species ----
+(ratio_parsley <- ggplot(subset(ratio, species == "Parsley"), aes(root_shoot)) +
+   geom_histogram(aes(fill = drought)) +
    theme_bw() +
-   ylab("Root/shoot ratio\n") +                             
-   xlab("\nSpecies")  +
+   xlab("Root/shoot ratio of Parlsey individuals\n")  +
    theme(axis.text = element_text(size = 12),
          axis.title = element_text(size = 14, face = "plain"),                     
          panel.grid = element_blank(),       
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-         legend.position = "none"))
+         legend.position = "right"))
+(ratio_basil <- ggplot(subset(ratio, species == "Basil"), aes(root_shoot)) +
+    geom_histogram(aes(fill = drought)) +
+    theme_bw() +
+    xlab("Root/shoot ratio of Basil individuals\n")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
+(ratio_dill <- ggplot(subset(ratio, species == "Dill"), aes(root_shoot)) +
+    geom_histogram(aes(fill = drought)) +
+    theme_bw() +
+    xlab("Root/shoot ratio of Dill individuals\n")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
 
 # Boxplot root/shoot + drought level + soil types ----
 (ratio_drought_soil_boxplot <- ggplot(ratio, aes(drought, root_shoot, color = soil)) +
