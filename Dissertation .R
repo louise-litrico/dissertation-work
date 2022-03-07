@@ -170,33 +170,18 @@ ratio <- ratio %>%
           legend.position = "none"))
 
 # Three plots for variation of root/shoot within species ----
-(ratio_parsley <- ggplot(subset(ratio, species == "Parsley"), aes(root_shoot)) +
-   geom_histogram(aes(fill = drought)) +
+(ratio_species_hist <- ggplot(ratio, aes(x = root_shoot)) +
+   geom_histogram(aes(fill = drought), bins = 25) +
    theme_bw() +
-   xlab("Root/shoot ratio of Parlsey individuals\n")  +
+   facet_wrap(~ species, scales = "fixed") +
+   xlab("Root/shoot ratio")  +
    theme(axis.text = element_text(size = 12),
          axis.title = element_text(size = 14, face = "plain"),                     
          panel.grid = element_blank(),       
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-         legend.position = "right"))
-(ratio_basil <- ggplot(subset(ratio, species == "Basil"), aes(root_shoot)) +
-    geom_histogram(aes(fill = drought)) +
-    theme_bw() +
-    xlab("Root/shoot ratio of Basil individuals\n")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "right"))
-(ratio_dill <- ggplot(subset(ratio, species == "Dill"), aes(root_shoot)) +
-    geom_histogram(aes(fill = drought)) +
-    theme_bw() +
-    xlab("Root/shoot ratio of Dill individuals\n")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "right"))
+         legend.position = "bottom"))
+
+# ggsave(ratio_species_hist, file = "outputs/ratio_species_hist.png", width = 12, height = 7)
 
 # Boxplot root/shoot + drought level + soil types ----
 (ratio_drought_soil_boxplot <- ggplot(ratio, aes(drought, root_shoot, color = soil)) +
