@@ -96,7 +96,7 @@ moisture <- moisture %>%
           legend.position = "bottom")) 
 
 # ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
-# whole figure tells us that there are both significant differences between soil types AND between drought treatments 
+# whole figure tells us that there seems to be significant differences between soil types AND between drought treatments 
 
 # Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot ----
 subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & drought_level == "100%")
@@ -156,6 +156,30 @@ ratio <- ratio %>%
           legend.position = "none"))
 
 # ggsave(ratio_soil_boxplot, file = "outputs/ratio_soil_boxplot.png", width = 12, height = 7)
+
+# Boxplot root/shoot and species ----
+(ratio_species_boxplot <- ggplot(ratio, aes(species, root_shoot)) +
+    geom_boxplot(aes(color = species)) +
+    theme_bw() +
+    ylab("Root/shoot ratio\n") +                             
+    xlab("\nSpecies")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "none"))
+
+# Three plots for variation of rooot/shoot within species ----
+(ratio_parsley <- ggplot(ratio, aes(species == "Parsley", root_shoot)) +
+   geom_boxplot(aes(color = species)) +
+   theme_bw() +
+   ylab("Root/shoot ratio\n") +                             
+   xlab("\nSpecies")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "none"))
 
 # Boxplot root/shoot + drought level + soil types ----
 (ratio_drought_soil_boxplot <- ggplot(ratio, aes(drought, root_shoot, color = soil)) +
@@ -225,3 +249,4 @@ summary(generalized_ratio3)
 
 AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
 # weird because I get different results than for the ANOVA...?
+
