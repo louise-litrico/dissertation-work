@@ -30,7 +30,7 @@ field_capacity_data <- field_capacity_data %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-# ggsave(soil_moisture_boxplot, file = "outputs/soil_moisture_boxplot.png", width = 12, height = 7) 
+# ggsave(soil_moisture_boxplot, file = "outputs/field_capacity_boxplot.png", width = 12, height = 7) 
 
 # Data manipulation for moisture measures ----
 # moisture probe measures need to be plotted against time to see the progression 
