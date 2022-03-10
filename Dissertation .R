@@ -63,7 +63,7 @@ moisture <- moisture %>%
 # Graph of moisture across time ----
 (moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = drought_level)) +
     geom_point() +
-    facet_wrap(~ soil_type, scales = "free_y") +
+    facet_wrap(~ soil_type, scales = "fixed") +
     geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
     theme_bw() +
     ylab("Moisture content (%)\n") +                             
@@ -239,6 +239,12 @@ summary(moisture_model)
 
 moisture_model_2 <- lm(field_capacity_percent ~ day + soil_type, data = moisture)
 summary(moisture_model_2)
+
+moisture_model_3 <- lm(field_capacity_percent ~ drought_level + soil_type, data = moisture)
+summary(moisture_model_3)
+
+moisture_model_4 <- lm(mean_moisture ~ drought_level + soil_type, data = moisture)
+summary(moisture_model_4)
 
 # Stats ratio ----
 ratio_model <- lm(root_shoot ~ drought, data = ratio)
