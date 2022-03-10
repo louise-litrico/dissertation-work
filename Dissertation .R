@@ -4,6 +4,7 @@
 library(tidyverse)
 library(readxl)
 library(scales)
+library(vegan)
 
 # Import datasets ----
 ratio <- read_excel("root-shoot.xls")
@@ -66,7 +67,7 @@ moisture <- moisture %>%
     facet_wrap(~ soil_type, scales = "fixed") +
     geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
     theme_bw() +
-    ylab("Moisture content (%)\n") +                             
+    ylab("Mean moisture content (%)\n") +                             
     xlab("\nDate") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
@@ -127,8 +128,8 @@ plot(pot_model)
 ratio <- ratio %>% 
   rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
-  filter(!root_shoot > 2.5, !Leaf_area > 5) %>%   # take out the outliers
-  mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
+  filter(!root_shoot > 2.5, !Leaf_area > 5)  # take out the outliers
+  # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
 # Boxplot root/shoot + drought level + species----
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
@@ -321,3 +322,14 @@ summary(generalized_ratio3)
 AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
 # weird because I get different results than for the ANOVA...?
 
+# Trying NMDS + permanova ----
+(ratio.fit <- adonis(root_shoot ~ drought*soil*species, ratio, 
+                      permutations = 500, method = "bray"))  # weird because shows effect of drought + species + soil which is different from ANOVA results
+
+(leaf_area.fit <- adonis(Leaf_area ~ drought*soil*species, ratio, 
+                     permutations = 500, method = "bray"))  # only species have significant difference which is same result as ANOVA
+
+# pairwise.adonis(invert[,5:18], invert$Site)  # post hoc test 
+ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 2, trymax=100)  # works but stress nearly 0 so may have insufficient data 
+# par(mfrow=c(1,1))
+# ratio.NMDS$stress
