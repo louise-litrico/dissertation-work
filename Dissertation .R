@@ -18,8 +18,8 @@ field_capacity_data <- field_capacity_data %>%
   mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soil
   mutate(moisture_content_percent = ((total_fresh/total_dry)-1)*100)  # new column with moisture content in %
 
-# Boxplot checking for differences of soil moisture between soil types ----
-(soil_moisture_boxplot <- ggplot(field_capacity_data, aes(soil_type, moisture_content_percent)) +
+# Boxplot checking for differences of field_capacity between soil types ----
+(field_capacity_boxplot <- ggplot(field_capacity_data, aes(soil_type, moisture_content_percent)) +
     geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
     ylab("Field capacity (%)\n") +                             
@@ -30,7 +30,7 @@ field_capacity_data <- field_capacity_data %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-# ggsave(soil_moisture_boxplot, file = "outputs/field_capacity_boxplot.png", width = 12, height = 7) 
+ # ggsave(soil_moisture_boxplot, file = "outputs/field_capacity_boxplot.png", width = 12, height = 7) 
 
 # Data manipulation for moisture measures ----
 # moisture probe measures need to be plotted against time to see the progression 
@@ -42,12 +42,12 @@ moisture <- moisture %>%
   mutate(day = case_when(day == "09" ~ 1, day == "11" ~ 3, day == "13" ~ 5, 
                          day == "16" ~ 8, day == "18" ~ 10, day == "20" ~ 12, 
                          day == "23" ~ 15)) %>% 
-  mutate(drought_level = case_when(pot == 1 ~ "50%",
-                                   pot == 2 ~ "75%",
-                                   pot == 3 ~ "100%",
-                                   pot == 4 ~ "50%",
-                                   pot == 5 ~ "75%",
-                                   pot == 6 ~ "100%")) %>% 
+  mutate(drought_level = case_when(pot == 1 ~ "50",
+                                   pot == 2 ~ "75",
+                                   pot == 3 ~ "100",
+                                   pot == 4 ~ "50",
+                                   pot == 5 ~ "75",
+                                   pot == 6 ~ "100")) %>% 
   mutate(drought_level = as_factor(drought_level)) %>% 
   mutate(field_capacity = c(field_capacity_data$moisture_content_percent,
                            field_capacity_data$moisture_content_percent,
@@ -57,9 +57,10 @@ moisture <- moisture %>%
                            field_capacity_data$moisture_content_percent,
                            field_capacity_data$moisture_content_percent)) %>% 
   mutate(field_capacity_percent = (mean_moisture*100)/field_capacity) %>% 
+  mutate(field_capacity_percent_sd = (sd*100)/field_capacity) %>% 
   filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
 
-# Graph of moisture accross time ----
+# Graph of moisture across time ----
 (moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = drought_level)) +
     geom_point() +
     facet_wrap(~ soil_type, scales = "free_y") +
@@ -78,7 +79,7 @@ moisture <- moisture %>%
 
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
-# Graph of field capacity % accross time ----
+# Graph of field capacity % across time ----
 (field_capacity_time_series <- ggplot(moisture, aes(day, field_capacity_percent, color = drought_level, fill = drought_level)) +
     geom_point() +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
@@ -126,12 +127,12 @@ plot(pot_model)
 ratio <- ratio %>% 
   rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
-  filter(!root_shoot > 2.5) %>%   # take out the outliers
+  filter(!root_shoot > 2.5, !Leaf_area > 5) %>%   # take out the outliers
   mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
-# Boxplot root/shoot and drought level ----
+# Boxplot root/shoot + drought level + species----
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
-    geom_boxplot(aes(color = drought)) +
+    geom_boxplot(aes(color = species)) +
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
     xlab("\nDrought level")  +
@@ -139,11 +140,11 @@ ratio <- ratio %>%
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "none"))
+          legend.position = "right"))
 
 # ggsave(ratio_boxplot, file = "outputs/ratio_boxplot.png", width = 12, height = 7)
 
-# Boxplot root/shoot and soil types ----
+# Boxplot root/shoot and soil types + species----
 (ratio_soil_boxplot <- ggplot(ratio, aes(soil, root_shoot)) +
     geom_boxplot(aes(color = soil)) +
     theme_bw() +
@@ -197,6 +198,41 @@ ratio <- ratio %>%
 
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
+# Boxplot leaf area + species ----
+(leaf_area_boxplot <- ggplot(ratio, aes(species, Leaf_area, color = species)) +
+   geom_boxplot() +
+   theme_bw() +
+   ylab("Leaf area (cm2)\n") +                             
+   xlab("\nSpecies")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "none"))
+
+# Boxplot leaf area + soil ----
+(leaf_area_boxplot <- ggplot(ratio, aes(soil, Leaf_area, color = soil)) +
+   geom_boxplot() +
+   theme_bw() +
+   ylab("Leaf area (cm2)\n") +                             
+   xlab("\nSoil type")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "none"))
+
+# Boxplot leaf area + drought ----
+(leaf_area_boxplot <- ggplot(ratio, aes(drought, Leaf_area, color = drought)) +
+   geom_boxplot() +
+   theme_bw() +
+   ylab("Leaf area (cm2)\n") +                             
+   xlab("\nDrought level")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "none"))
 # Stats moisture contents and field capacity ----
 moisture_model <- lm(field_capacity ~ soil_type, data = moisture)
 summary(moisture_model)
@@ -215,12 +251,22 @@ summary(ratio_model2)
 anova(ratio_model2)
 plot(ratio_model2)
 
-ratio_model3 <- lm(root_shoot ~ drought*soil*species, data = ratio)
+ratio_model3 <- lm(root_shoot ~ drought*species, data = ratio)
 summary(ratio_model3)
 anova(ratio_model3)
 plot(ratio_model3)
 
-AIC(ratio_model, ratio_model2, ratio_model3)  # model 2 is much better (lower) than other 2 so explains variation the most 
+ratio_model4 <- lm(root_shoot ~ soil + species, data = ratio)
+summary(ratio_model4)
+anova(ratio_model4)
+plot(ratio_model4)
+
+ratio_model5 <- lm(root_shoot ~ species, data = ratio)
+summary(ratio_model5)
+anova(ratio_model5)
+plot(ratio_model5)
+
+AIC(ratio_model, ratio_model2, ratio_model3)  # can I use AIC for lm???
 
 # Verification of assumptions
 ratio_resids <- resid(ratio_model2)
@@ -229,10 +275,20 @@ bartlett.test(root_shoot ~ drought*species + soil, data = ratio)  # doesn't work
 fligner.test(root_shoot ~ drought*species + soil, data = ratio) 
 
 # Stats leaf area ----
-leaf_area_model <- lm(Leaf_area ~ drought*soil*species, data = ratio)
+leaf_area_model <- lm(Leaf_area ~ species, data = ratio)
 summary(leaf_area_model)
 anova(leaf_area_model)
 plot(leaf_area_model)
+
+leaf_area_model2 <- lm(Leaf_area ~ soil, data = ratio)
+summary(leaf_area_model2)
+anova(leaf_area_model2)
+plot(leaf_area_model2)
+
+leaf_area_model3 <- lm(Leaf_area ~ drought, data = ratio)
+summary(leaf_area_model3)
+anova(leaf_area_model3)
+plot(leaf_area_model3)
 
 # Verification of assumptions # 
 leaf_resids <- resid(leaf_area_model)
@@ -243,7 +299,7 @@ bartlett.test(Leaf_area ~ drought*soil*species, data = ratio)  # doesn't work wi
 ratio_aov <- aov(root_shoot ~ drought*soil*species, data = ratio)
 TukeyHSD(ratio_aov)
 
-# Trying a generalized linear model ----
+# Trying generalized linear models ----
 # check family 
 hist(ratio$root_shoot)
 
