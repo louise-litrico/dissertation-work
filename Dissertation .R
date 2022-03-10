@@ -7,19 +7,19 @@ library(scales)
 
 # Import datasets ----
 ratio <- read_excel("root-shoot.xls")
-field_capacity <- read_excel("Field_capacity_diss.xlsx")
+field_capacity_data <- read_excel("Field_capacity_diss.xlsx")
 moisture <- read_excel("moisture.xlsx")
 
 # Data manipulation field capacity dataset ----
 # water content = grams of water contained in the soil per pot
 # moisture = mean and sd per pot measured by probe every other day in %
-field_capacity <- field_capacity %>% 
+field_capacity_data <- field_capacity_data %>% 
   mutate(soil_type = as_factor(soil_type), pot_number = as_factor(pot_number)) %>% 
   mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soil
   mutate(moisture_content_percent = ((total_fresh/total_dry)-1)*100)  # new column with moisture content in %
 
 # Boxplot checking for differences of soil moisture between soil types ----
-(soil_moisture_boxplot <- ggplot(field_capacity, aes(soil_type, moisture_content_percent)) +
+(soil_moisture_boxplot <- ggplot(field_capacity_data, aes(soil_type, moisture_content_percent)) +
     geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
     ylab("Moisture content (%)\n") +                             
@@ -49,14 +49,14 @@ moisture <- moisture %>%
                                    pot == 5 ~ "75%",
                                    pot == 6 ~ "100%")) %>% 
   mutate(drought_level = as_factor(drought_level)) %>% 
-  mutate(soil_type_moisture = c(field_capacity$moisture_content_percent,
-                           field_capacity$moisture_content_percent,
-                           field_capacity$moisture_content_percent,
-                           field_capacity$moisture_content_percent,
-                           field_capacity$moisture_content_percent,
-                           field_capacity$moisture_content_percent,
-                           field_capacity$moisture_content_percent)) %>% 
-  mutate(drought_level_percent = (mean_moisture*100)/soil_type_moisture) %>% 
+  mutate(field_capacity = c(field_capacity_data$moisture_content_percent,
+                           field_capacity_data$moisture_content_percent,
+                           field_capacity_data$moisture_content_percent,
+                           field_capacity_data$moisture_content_percent,
+                           field_capacity_data$moisture_content_percent,
+                           field_capacity_data$moisture_content_percent,
+                           field_capacity_data$moisture_content_percent)) %>% 
+  mutate(field_capacity_percent = (mean_moisture*100)/field_capacity) %>% 
   filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
 
 # Graph of moisture accross time ----
@@ -79,12 +79,12 @@ moisture <- moisture %>%
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
 # Graph of field capacity % accross time ----
-(field_capacity_time_series <- ggplot(moisture, aes(day, drought_level_percent, color = drought_level, fill = drought_level)) +
+(field_capacity_time_series <- ggplot(moisture, aes(day, field_capacity_percent, color = drought_level, fill = drought_level)) +
     geom_point() +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_bw() +
     facet_wrap(~ soil_type, scales = "fixed") +
-    ylab("Moisture content (% of soil moisture content at field capacity)\n") +                             
+    ylab("Soil moisture (% of soil field capacity)\n") +                             
     xlab("\nTime (days since start of experiment)") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
@@ -197,6 +197,8 @@ ratio <- ratio %>%
 
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
+# Stats field capacity ----
+moisture_model <- 
 # Stats ratio ----
 ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
 summary(ratio_model)
