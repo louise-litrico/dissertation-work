@@ -101,7 +101,7 @@ moisture <- moisture %>%
 # Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot ----
 subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & drought_level == "100%")
 
-(field_capacity_time_series <- ggplot(subset_moisture_soil_2, aes(date, drought_level_percent, color = pot)) +
+(field_capacity_time_series <- ggplot(subset_moisture_soil_2, aes(date, field_capacity_percent, color = pot)) +
     geom_point() +
     geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
     theme_bw() +
@@ -127,7 +127,7 @@ ratio <- ratio %>%
   rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
   filter(!root_shoot > 2.5) %>%   # take out the outliers
-  mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))
+  mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
 # Boxplot root/shoot and drought level ----
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
@@ -197,20 +197,25 @@ ratio <- ratio %>%
 
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
-# Stats field capacity ----
-moisture_model <- 
+# Stats moisture contents and field capacity ----
+moisture_model <- lm(field_capacity ~ soil_type, data = moisture)
+summary(moisture_model)
+
+moisture_model_2 <- lm(field_capacity_percent ~ day + soil_type, data = moisture)
+summary(moisture_model_2)
+
 # Stats ratio ----
-ratio_model <- lm(root_shoot ~ drought*soil*species, data = ratio)
+ratio_model <- lm(root_shoot ~ drought, data = ratio)
 summary(ratio_model)
 anova(ratio_model)
 plot(ratio_model)
 
-ratio_model2 <- lm(root_shoot ~ drought*species + soil, data = ratio)
+ratio_model2 <- lm(root_shoot ~ soil, data = ratio)
 summary(ratio_model2)
 anova(ratio_model2)
 plot(ratio_model2)
 
-ratio_model3 <- lm(root_shoot ~ drought + species + soil, data = ratio)
+ratio_model3 <- lm(root_shoot ~ drought*soil*species, data = ratio)
 summary(ratio_model3)
 anova(ratio_model3)
 plot(ratio_model3)
