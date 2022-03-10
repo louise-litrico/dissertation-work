@@ -22,7 +22,7 @@ field_capacity_data <- field_capacity_data %>%
 (soil_moisture_boxplot <- ggplot(field_capacity_data, aes(soil_type, moisture_content_percent)) +
     geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
-    ylab("Moisture content (%)\n") +                             
+    ylab("Field capacity (%)\n") +                             
     xlab("\nSoil Type")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
