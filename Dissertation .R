@@ -236,6 +236,22 @@ ratio <- ratio %>%
          panel.grid = element_blank(),       
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
          legend.position = "none"))
+
+# Data manipulation biomass data ----
+biomass <- ratio %>% 
+  select(drought,soil,species,Fresh_weight_shoot)
+# Barplot biomass in different parts of plant per treatment ----
+(biomass_barplot <- ggplot(ratio, aes(drought, Leaf_area, color = drought)) +
+   geom_boxplot() +
+   theme_bw() +
+   ylab("Leaf area (cm2)\n") +                             
+   xlab("\nDrought level")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "none"))
+
 # Stats moisture contents and field capacity ----
 moisture_model <- lm(field_capacity ~ soil_type, data = moisture)
 summary(moisture_model)
