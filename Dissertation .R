@@ -239,7 +239,7 @@ ratio <- ratio %>%
 
 # Data manipulation biomass data ----
 biomass <- ratio %>% 
-  select(drought,soil,species,Fresh_weight_shoot)
+  select(drought,soil,species,Fresh_weight_shoot,Fresh_weight_total,Dry_weight_shoot,Dry_weight_root)
 # Barplot biomass in different parts of plant per treatment ----
 (biomass_barplot <- ggplot(ratio, aes(drought, Leaf_area, color = drought)) +
    geom_boxplot() +
