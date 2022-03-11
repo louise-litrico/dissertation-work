@@ -136,6 +136,19 @@ ratio <- ratio %>%
   # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
 # Graphs root/shoot ----
+# Graph with log total biomass and log root/shoot 
+(biomass_root_shoot_graph <- ggplot(ratio, aes(log(root_shoot), log(Dry_weight_total))) +
+   geom_point(aes(color = drought)) +
+   geom_smooth(aes(color = drought), se = FALSE, method = "lm") +
+   theme_bw() +
+   ylab("Log total biomass\n") +                             
+   xlab("\nLog root/shoot ratio")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "right"))
+
 # Boxplot root/shoot + drought level + species
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
     geom_boxplot(aes(color = species)) +
