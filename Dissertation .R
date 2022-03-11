@@ -18,13 +18,14 @@ moisture <- read_excel("moisture.xlsx")
 field_capacity_data <- field_capacity_data %>% 
   mutate(soil_type = as_factor(soil_type), pot_number = as_factor(pot_number)) %>% 
   mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soil
-  mutate(moisture_content_percent = ((total_fresh/total_dry)-1)*100)  # new column with moisture content in %
+  mutate(moisture_content = ((total_fresh/total_dry)-1))  # new column with soil moisture content
+# should I add *100 or not??? 
 
 # Boxplot checking for differences of field_capacity between soil types ----
-(field_capacity_boxplot <- ggplot(field_capacity_data, aes(soil_type, moisture_content_percent)) +
+(field_capacity_boxplot <- ggplot(field_capacity_data, aes(soil_type, moisture_content)) +
     geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
-    ylab("Field capacity (%)\n") +                             
+    ylab("Field capacity\n") +                             
     xlab("\nSoil Type")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
@@ -51,13 +52,13 @@ moisture <- moisture %>%
                                    pot == 5 ~ "75",
                                    pot == 6 ~ "100")) %>% 
   mutate(drought_level = as_factor(drought_level)) %>% 
-  mutate(field_capacity = c(field_capacity_data$moisture_content_percent,
-                           field_capacity_data$moisture_content_percent,
-                           field_capacity_data$moisture_content_percent,
-                           field_capacity_data$moisture_content_percent,
-                           field_capacity_data$moisture_content_percent,
-                           field_capacity_data$moisture_content_percent,
-                           field_capacity_data$moisture_content_percent)) %>% 
+  mutate(field_capacity = c(field_capacity_data$moisture_content,
+                           field_capacity_data$moisture_content,
+                           field_capacity_data$moisture_content,
+                           field_capacity_data$moisture_content,
+                           field_capacity_data$moisture_content,
+                           field_capacity_data$moisture_content,
+                           field_capacity_data$moisture_content)) %>% 
   mutate(field_capacity_percent = (mean_moisture*100)/field_capacity) %>% 
   mutate(field_capacity_percent_sd = (sd*100)/field_capacity) %>% 
   filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
