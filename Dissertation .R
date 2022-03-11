@@ -5,6 +5,7 @@ library(tidyverse)
 library(readxl)
 library(scales)
 library(vegan)
+library(gplots)
 
 # Import datasets ----
 ratio <- read_excel("root-shoot.xls")
@@ -31,7 +32,7 @@ field_capacity_data <- field_capacity_data %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
- # ggsave(soil_moisture_boxplot, file = "outputs/field_capacity_boxplot.png", width = 12, height = 7) 
+# ggsave(soil_moisture_boxplot, file = "outputs/field_capacity_boxplot.png", width = 12, height = 7) 
 
 # Data manipulation for moisture measures ----
 # moisture probe measures need to be plotted against time to see the progression 
@@ -333,3 +334,12 @@ AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
 ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 2, trymax=100)  # works but stress nearly 0 so may have insufficient data 
 # par(mfrow=c(1,1))
 # ratio.NMDS$stress
+
+# Trying a manova ----
+(manova1 <- manova(cbind(root_shoot, Leaf_area) ~ drought + soil + species, ratio))
+summary(manova1)
+summary.aov(manova1)
+
+plotmeans(ratio$root_shoot ~ ratio$drought)
+plotmeans(ratio$root_shoot ~ ratio$species)
+plotmeans(ratio$root_shoot ~ ratio$soil)
