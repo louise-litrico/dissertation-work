@@ -250,19 +250,52 @@ biomass_data <- ratio %>%
   filter(!biomass > 0.15)
 
 # Graph biomass ----
-# Barplot biomass in different parts of plant per treatment
-(biomass_barplot <- ggplot(biomass_data, aes(area, biomass)) +
-  geom_col(aes(fill = drought)) +
+# Barplot biomass in different parts of plant per drought treatment and species 
+(biomass_drought_species_barplot <- ggplot(biomass_data, aes(area, biomass, fill = drought)) +
+  geom_bar(position = position_dodge(), stat = "identity") +
+  facet_wrap(~ species, scales = "fixed") +
   theme_bw() +
   ylab("Biomass (g)\n") +                             
-  xlab("\nDrought level")  +
+  xlab("\nPlant part")  +
   theme(axis.text = element_text(size = 12),
         axis.title = element_text(size = 14, face = "plain"),                     
         panel.grid = element_blank(),       
         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
         legend.position = "right"))
 
- # Stats moisture and field capacity ----
+# ggsave(biomass_drought_species_barplot, file = "outputs/biomass_drought_species_barplot.png", width = 12, height = 7)
+
+# Barplot biomass in different parts of plant per drought treatment and soil type
+(biomass_drought_soil_barplot <- ggplot(biomass_data, aes(area, biomass, fill = drought)) +
+    geom_bar(position = position_dodge(), stat = "identity") +
+    facet_wrap(~ soil, scales = "fixed") +
+    theme_bw() +
+    ylab("Biomass (g)\n") +                             
+    xlab("\nPlant part")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
+
+# ggsave(biomass_drought_soil_barplot, file = "outputs/biomass_drought_soil_barplot.png", width = 12, height = 7)
+
+# Barplot biomass in different parts of plant per species and soil type
+(biomass_species_soil_barplot <- ggplot(biomass_data, aes(area, biomass, fill = species)) +
+    geom_bar(position = position_dodge(), stat = "identity") +
+    facet_wrap(~ soil, scales = "fixed") +
+    theme_bw() +
+    ylab("Biomass (g)\n") +                             
+    xlab("\nPlant part")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
+
+# ggsave(biomass_species_soil_barplot, file = "outputs/biomass_species_soil_barplot.png", width = 12, height = 7)
+
+# Stats moisture and field capacity ----
 moisture_model <- lm(field_capacity ~ soil_type, data = moisture)
 summary(moisture_model)
 
