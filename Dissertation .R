@@ -132,17 +132,20 @@ plot(pot_model)
 ratio <- ratio %>% 
   rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
-  filter(!root_shoot > 2.5, !Leaf_area > 5)  # take out the outliers
+  filter(!root_shoot > 2.5, !Leaf_area > 5) %>%   # take out the outliers
+  mutate(biomass_log = log(Dry_weight_total))
   # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
+  
 
 # Graphs root/shoot ----
 # Graph with log total biomass and log root/shoot 
-(biomass_root_shoot_graph <- ggplot(ratio, aes(log(root_shoot), log(Dry_weight_total))) +
-   geom_point(aes(color = drought)) +
-   geom_smooth(aes(color = drought), se = FALSE, method = "lm") +
+(biomass_root_shoot_graph <- ggplot(ratio, aes(log(Dry_weight_total), log(root_shoot))) +
+   geom_point(aes(color = soil)) +
+   geom_smooth(aes(color = soil), se = FALSE, method = "lm") +
+   facet_wrap(~ drought, scales = "fixed") +
    theme_bw() +
-   ylab("Log total biomass\n") +                             
-   xlab("\nLog root/shoot ratio")  +
+   ylab("Log root/shoot ratio\n") +                             
+   xlab("\nLog total biomass")  +
    theme(axis.text = element_text(size = 12),
          axis.title = element_text(size = 14, face = "plain"),                     
          panel.grid = element_blank(),       
