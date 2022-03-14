@@ -133,9 +133,8 @@ ratio <- ratio %>%
   rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
   filter(!root_shoot > 2.5, !Leaf_area > 5) %>%   # take out the outliers
-  mutate(biomass_log = log(Dry_weight_total))
+  mutate(biomass_log = log(Dry_weight_total), root_shoot_log = log(root_shoot))
   # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
-  
 
 # Graphs root/shoot ----
 # Graph with log total biomass and log root/shoot 
@@ -152,9 +151,11 @@ ratio <- ratio %>%
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
          legend.position = "right"))
 
-# Boxplot root/shoot + drought level + species
+# ggsave(biomass_root_shoot_graph, file = "outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
+
+# Boxplot log root/shoot + drought level
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
-    geom_boxplot(aes(color = species)) +
+    geom_boxplot(aes(color = drought)) +
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
     xlab("\nDrought level")  +
@@ -407,9 +408,34 @@ AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
                      permutations = 500, method = "bray"))  # only species have significant difference which is same result as ANOVA
 
 # pairwise.adonis(invert[,5:18], invert$Site)  # post hoc test 
-ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 2, trymax=100)  # works but stress nearly 0 so may have insufficient data 
+ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 3, trymax=100)  # works but stress nearly 0 so may have insufficient data 
 # par(mfrow=c(1,1))
 # ratio.NMDS$stress
+
+group <- as.character(invert$Distance)
+colours <- as.character(invert$Distance)
+
+as.character(invert$Distance) %>% 
+  replace(colours=="0", "#ddffa2") %>% 
+  replace(colours=="6", "#a9c3e1") %>% 
+  replace(colours=="12", "#ff4f4f") %>% 
+  replace(colours=="18", "#fffcbf") -> colours
+
+# create the NMDS plot #
+
+par(mfrow=c(1,1))
+ordiplot(ratio.NMDS, type = "n", cex.axis = 2, cex.lab=2)
+
+for(i in unique(group)) {
+  ordihull(ratio.NMDS$points[grep(i, group),], draw="polygon",
+           groups = group[group == i],col = colours[grep(i,group)],label=F) 
+  }  # doesn't work 
+
+orditorp(ratio.NMDS, display = "species", col = "red", air = 0.01)
+orditorp(invert.NMDS, display = "sites", label=F, air = 0.01, cex = 1.25)
+legend('bottomright', legend=c("0m","6m","12m","18m"), col=unique(colours), 
+       title = "Distance from road", bty = "n", pch = 16)
+legend('bottomleft', legend="stress = 0.042", bty = "n")
 
 # MANOVA ----
 (manova1 <- manova(cbind(root_shoot, Leaf_area) ~ drought + soil + species, ratio))
