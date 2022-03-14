@@ -138,9 +138,9 @@ ratio <- ratio %>%
 
 # Graphs root/shoot ----
 # Graph with log total biomass and log root/shoot 
-(biomass_root_shoot_graph <- ggplot(ratio, aes(log(Dry_weight_total), log(root_shoot))) +
+(biomass_root_shoot_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
    geom_point(aes(color = soil)) +
-   geom_smooth(aes(color = soil), se = FALSE, method = "lm") +
+   geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
    facet_wrap(~ drought, scales = "fixed") +
    theme_bw() +
    ylab("Log root/shoot ratio\n") +                             
@@ -152,6 +152,19 @@ ratio <- ratio %>%
          legend.position = "right"))
 
 # ggsave(biomass_root_shoot_graph, file = "outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
+
+# Graph with log root/shoot and log leaf area 
+(leaf_area_root_shoot_graph <- ggplot(ratio, aes(log(Leaf_area), root_shoot_log)) +
+    geom_point(aes(color = soil)) +
+    geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+    theme_bw() +
+    ylab("Log root/shoot ratio\n") +                             
+    xlab("\nLog leaf area")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
 
 # Boxplot log root/shoot + drought level
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
@@ -222,20 +235,42 @@ ratio <- ratio %>%
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
 # Graph root and shoot allometric regression 
+slopes <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 100)$coefficients[1]),
+            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 75)$coefficients[1]),
+            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 50)$coefficients[1]))
+slopes2 <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 100)$coefficients[2]),
+             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 75)$coefficients[2]),
+             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 50)$coefficients[2]))
+
+coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>% 
+  rename(intercept = slopes, slope = slopes2, drought = c.100..75..50.)
+
 (root_shoot_graph <- ggplot(ratio, aes(Dry_weight_root, Dry_weight_shoot)) +
     geom_point(aes(color = drought)) +
-    geom_smooth(aes(color = drought), se = FALSE, method = "lm") +
+    stat_smooth(aes(color = drought), se = FALSE, method = "lm") +
     theme_bw() +
     ylab("Plant shoot biomass (g)\n") +                             
-    xlab("\nPlant root biomass (g)")  +
+    xlab("\nPlant root biomass (g)") +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
+    # this doesn't work for some reason...? 
+    # annotate("text", x = 50, y = 50, label = "0.931",  
+    #        size = 4) +
+    # annotate("text", x = 40, y = 40, label = "0.713",
+    #        size = 4) +
+    # annotate("text", x = 30, y = 30, label = "0.795",
+    #        size = 4))
+
+# If I want to add an arrow that points from the label to the curve? 
+# # geom_curve(aes(x = 50, y = 60, xend = mean(carex$hits) + 2, yend = 60),
+#              arrow = arrow(length = unit(0.07, "inch")), size = 0.7,
+#              color = "grey30", curvature = 0.3)
 
 # ggsave(root_shoot_graph, file = "outputs/root_shoot_graph.png", width = 12, height = 7)
-# facet_wrap(~ drought, scales = "fixed") +
+# facet_wrap(~ drought, scales = "fixed")
   
 # Graphs leaf area ----
 # Boxplot leaf area + species
@@ -290,25 +325,41 @@ biomass_data <- ratio %>%
 # Graph biomass ----
 # Plot total biomass with ≠ drought 
 biomass_subset <- biomass_data %>% 
-  filter(area %in% c("total")) %>% 
-  group_by(drought, species) %>% 
-  mutate(mean = mean(biomass), sd = sd(biomass)) %>% 
-  group_by(drought, species, mean, sd) %>% 
-  tally()
-  ungroup() 
-  
-(total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, mean, fill = drought)) +
-   geom_bar(position = position_dodge(), stat = "identity") +
-   geom_errorbar(aes(x = drought, ymin = mean-sd, ymax = mean+sd, width=0.4)) +
-   facet_wrap(~ species, scales = "fixed") +
-   theme_bw() +
-   ylab("Total plant biomass (g)\n") +                             
-   xlab("\nDrought treatment")  +
-   theme(axis.text = element_text(size = 12),
-         axis.title = element_text(size = 14, face = "plain"),                     
-         panel.grid = element_blank(),       
-         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-         legend.position = "none"))
+  filter(area %in% c("total"))
+
+(total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, biomass, fill = drought)) +
+    geom_bar(position = position_dodge(), stat = "identity") +
+    facet_wrap(~ species, scales = "fixed") +
+    theme_bw() +
+    ylab("Total plant biomass (g)\n") +                             
+    xlab("\nDrought treatment")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "none"))
+
+# with the mean and error bars instead?
+# biomass_subset <- biomass_data %>% 
+#   filter(area %in% c("total")) %>% 
+#   group_by(drought, species) %>% 
+#   mutate(mean = mean(biomass), sd = sd(biomass)) %>% 
+#   group_by(drought, species, mean, sd) %>% 
+#   tally() %>% 
+#   ungroup() 
+#   
+# (total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, mean, fill = drought)) +
+#    geom_bar(position = position_dodge(), stat = "identity") +
+#    geom_errorbar(aes(x = drought, ymin = mean-sd, ymax = mean+sd, width=0.4)) +
+#    facet_wrap(~ species, scales = "fixed") +
+#    theme_bw() +
+#    ylab("Total plant biomass (g)\n") +                             
+#    xlab("\nDrought treatment")  +
+#    theme(axis.text = element_text(size = 12),
+#          axis.title = element_text(size = 14, face = "plain"),                     
+#          panel.grid = element_blank(),       
+#          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+#          legend.position = "none"))
 
 # ggsave(total_biomass_drought_barplot, file = "outputs/total_biomass_drought_barplot.png", width = 12, height = 7)
 
