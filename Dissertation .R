@@ -7,7 +7,7 @@ library(scales)
 library(vegan)
 library(gplots)
 
-# Datasets ----
+# Data sets ----
 ratio <- read_excel("root-shoot.xls")
 field_capacity_data <- read_excel("Field_capacity_diss.xlsx")
 moisture <- read_excel("moisture.xlsx")
@@ -511,18 +511,17 @@ AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
                      permutations = 500, method = "bray"))  # only species have significant difference which is same result as ANOVA
 
 # pairwise.adonis(invert[,5:18], invert$Site)  # post hoc test 
-ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 3, trymax=100)  # works but stress nearly 0 so may have insufficient data 
+ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 2, trymax=100)  # works but stress nearly 0 so may have insufficient data 
 # par(mfrow=c(1,1))
 # ratio.NMDS$stress
 
-group <- as.character(invert$Distance)
-colours <- as.character(invert$Distance)
+group <- as.character(ratio$drought)
+colours <- as.character(ratio$drought)
 
-as.character(invert$Distance) %>% 
-  replace(colours=="0", "#ddffa2") %>% 
-  replace(colours=="6", "#a9c3e1") %>% 
-  replace(colours=="12", "#ff4f4f") %>% 
-  replace(colours=="18", "#fffcbf") -> colours
+as.character(ratio$drought) %>% 
+  replace(colours=="100", "#ddffa2") %>% 
+  replace(colours=="75", "#a9c3e1") %>% 
+  replace(colours=="50", "#ff4f4f") -> colours
 
 # create the NMDS plot #
 
@@ -532,10 +531,10 @@ ordiplot(ratio.NMDS, type = "n", cex.axis = 2, cex.lab=2)
 for(i in unique(group)) {
   ordihull(ratio.NMDS$points[grep(i, group),], draw="polygon",
            groups = group[group == i],col = colours[grep(i,group)],label=F) 
-  }  # doesn't work 
+  }
 
 orditorp(ratio.NMDS, display = "species", col = "red", air = 0.01)
-orditorp(invert.NMDS, display = "sites", label=F, air = 0.01, cex = 1.25)
+orditorp(ratio.NMDS, display = "sites", label=F, air = 0.01, cex = 1.25)
 legend('bottomright', legend=c("0m","6m","12m","18m"), col=unique(colours), 
        title = "Distance from road", bty = "n", pch = 16)
 legend('bottomleft', legend="stress = 0.042", bty = "n")
