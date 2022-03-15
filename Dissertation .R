@@ -390,7 +390,7 @@ biomass_data <- ratio %>%
 (total_biomass_drought_barplot <- ggplot(ratio, aes(drought, Dry_weight_total, fill = drought, color = drought)) +
     geom_bar(position = position_dodge(), stat = "identity") +
     theme_bw() +
-    facet_wrap(~ soil, scales = "fixed") +
+    facet_wrap(~ species, scales = "fixed") +
     ylab("Total plant biomass (g)\n") +                             
     xlab("\nDrought treatment")  +
     theme(axis.text = element_text(size = 12),
@@ -516,8 +516,9 @@ bartlett.test(root_shoot ~ drought*species + soil, data = ratio)  # doesn't work
 fligner.test(root_shoot ~ drought*species + soil, data = ratio) 
 
 # Stats biomass ----
-total_biomass_model <- lm(Dry_weight_total ~ drought*soil + species, data = ratio)
+total_biomass_model <- lm(Dry_weight_total ~ species + drought*soil, data = ratio)
 summary(total_biomass_model)
+anova(total_biomass_model)
 
 # Stats leaf area ----
 leaf_area_model <- lm(Leaf_area ~ species, data = ratio)
