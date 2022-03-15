@@ -191,6 +191,18 @@ ratio <- ratio %>%
          legend.position = "right"))
 
 # ggsave(biomass_root_shoot_graph, file = "outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
+# log graph colored by soil 
+(biomass_root_shoot_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
+    geom_point(aes(color = soil)) +
+    geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+    theme_bw() +
+    ylab("Log root/shoot ratio\n") +                             
+    xlab("\nLog total biomass")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
 
 # Boxplot  root/shoot + drought level
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
@@ -301,19 +313,6 @@ coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>%
 # facet_wrap(~ drought, scales = "fixed")
   
 # Graphs leaf area ----
-# Graph with log root/shoot and log leaf area 
-(leaf_area_biomass_graph <- ggplot(ratio, aes(log(Leaf_area), biomass_log)) +
-   geom_point(aes(color = drought)) +
-   geom_smooth(aes(color = drought), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
-   theme_bw() +
-   ylab("Log root/shoot ratio\n") +                             
-   xlab("\nLog leaf area")  +
-   theme(axis.text = element_text(size = 12),
-         axis.title = element_text(size = 14, face = "plain"),                     
-         panel.grid = element_blank(),       
-         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-         legend.position = "right"))
-
 # Graph log leaf area ratio and log biomass
 (biomass_leaf_ratio_graph <- ggplot(ratio, aes(biomass_log, log(leaf_area_ratio))) +
     geom_point(aes(color = soil)) +
