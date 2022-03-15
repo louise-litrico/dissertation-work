@@ -106,7 +106,7 @@ moisture <- moisture %>%
 
 # Graph of moisture % and irrigation volume 
 (irrigation_time_series <- ggplot(moisture, aes(day, mean_moisture)) +
-    geom_point(aes(color = irrigation)) +
+    geom_point(size = 5, aes(color = irrigation)) +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_bw() +
     facet_wrap(~ soil_type, scales = "fixed") +
@@ -120,6 +120,8 @@ moisture <- moisture %>%
           legend.text = element_text(size = 10, face = "italic"),  
           legend.title = element_blank(),  # Removing the legend title 
           legend.position = "right")) 
+
+# ggsave(irrigation_time_series, file = "outputs/irrigation_time_series.png", width = 12, height = 7) 
 
 # Graph of field capacity % across time
 (field_capacity_time_series <- ggplot(moisture, aes(day, field_capacity_percent, color = drought_level, fill = drought_level)) +
