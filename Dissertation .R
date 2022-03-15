@@ -172,7 +172,7 @@ ratio <- ratio %>%
 
 # Graphs root/shoot ----
 # Heatmap R/S + soil + drought
-(root_shoot_heatmap <- ggplot(ratio, aes(soil, drought, fill = Leaf_area)) +
+(root_shoot_heatmap <- ggplot(ratio, aes(soil, drought, fill = root_shoot)) +
    geom_tile())
 
 # ggsave(root_shoot_heatmap, file = "outputs/root_shoot_heatmap.png", width = 12, height = 7) 
@@ -192,7 +192,7 @@ ratio <- ratio %>%
 
 # ggsave(biomass_root_shoot_graph, file = "outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
 
-# Boxplot log root/shoot + drought level
+# Boxplot  root/shoot + drought level
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
     geom_boxplot(aes(color = drought)) +
     theme_bw() +
@@ -314,11 +314,12 @@ coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>%
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
          legend.position = "right"))
 
-# Graph log leaf area ratio and log 
+# Graph log leaf area ratio and log biomass
 (biomass_leaf_ratio_graph <- ggplot(ratio, aes(biomass_log, log(leaf_area_ratio))) +
     geom_point(aes(color = soil)) +
     geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
     theme_bw() +
+    facet_wrap(~ species, scales = "fixed") +
     ylab("Log leaf area ratio\n") +                             
     xlab("\nLog total biomass")  +
     theme(axis.text = element_text(size = 12),
@@ -326,6 +327,8 @@ coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>%
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
+
+# ggsave(leaf_area_boxplot_drought, file = "outputs/leaf_area_boxplot_drought.png", width = 12, height = 7)
 
 # Boxplot leaf area + species
 (leaf_area_boxplot_species <- ggplot(ratio, aes(species, Leaf_area, color = species)) +
@@ -377,26 +380,11 @@ biomass_data <- ratio %>%
   select(-moisture,-weight)
 
 # Graph biomass ----
-# Plot total biomass with ≠ drought 
-biomass_subset <- biomass_data %>% 
-  filter(area %in% c("total"))
-
-(total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, biomass, fill = drought)) +
-    geom_bar(position = position_dodge(), stat = "identity") +
-    facet_wrap(~ species, scales = "fixed") +
-    theme_bw() +
-    ylab("Total plant biomass (g)\n") +                             
-    xlab("\nDrought treatment")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "none"))
-
 # Plot total biomass and soil types 
-(total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, biomass, fill = drought)) +
+(total_biomass_drought_barplot <- ggplot(ratio, aes(drought, Dry_weight_total, fill = drought, color = drought)) +
     geom_bar(position = position_dodge(), stat = "identity") +
     theme_bw() +
+    facet_wrap(~ soil, scales = "fixed") +
     ylab("Total plant biomass (g)\n") +                             
     xlab("\nDrought treatment")  +
     theme(axis.text = element_text(size = 12),
@@ -522,7 +510,7 @@ bartlett.test(root_shoot ~ drought*species + soil, data = ratio)  # doesn't work
 fligner.test(root_shoot ~ drought*species + soil, data = ratio) 
 
 # Stats biomass ----
-total_biomass_model <- lm(Dry_weight_total ~ drought, data = ratio)
+total_biomass_model <- lm(Dry_weight_total ~ drought*soil + species, data = ratio)
 summary(total_biomass_model)
 
 total_biomass_model2 <- lm(Dry_weight_total ~ species, data = ratio)
@@ -537,15 +525,9 @@ summary(leaf_area_model)
 anova(leaf_area_model)
 plot(leaf_area_model)
 
-leaf_area_model2 <- lm(Leaf_area ~ soil, data = ratio)
-summary(leaf_area_model2)
-anova(leaf_area_model2)
-plot(leaf_area_model2)
-
-leaf_area_model3 <- lm(Leaf_area ~ drought, data = ratio)
-summary(leaf_area_model3)
-anova(leaf_area_model3)
-plot(leaf_area_model3)
+leaf_area_ratio_model <- lm(leaf_area_ratio ~ species, data = ratio)
+summary(leaf_area_ratio_model)
+plot(leaf_area_ratio_model)
 
 # Verification of assumptions # 
 leaf_resids <- resid(leaf_area_model)
