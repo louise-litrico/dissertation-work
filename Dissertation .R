@@ -94,7 +94,8 @@ moisture <- moisture %>%
     scale_y_continuous(name = "Mean moisture content (%)\n",
                        sec.axis = sec_axis(~.*2, name="Irrigation volume (ml)")) +
     theme_bw() +
-    xlab("\nDate") +
+    facet_wrap(~ soil_type, scales = "fixed") +
+    xlab("\nDay since start of experiment") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
           axis.title = element_text(size = 12, face = "plain"),                        
