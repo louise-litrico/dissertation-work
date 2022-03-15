@@ -105,14 +105,12 @@ moisture <- moisture %>%
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
 # Graph of moisture % and irrigation volume 
-(irrigation_time_series <- ggplot(moisture) +
-    geom_point(aes(day, mean_moisture, color = drought_level)) +
-    geom_smooth(formula = y ~ x, method = "lm", aes(day, mean_moisture, fill = drought_level)) + # add se = FALSE to remove error shading
-    geom_point(aes(day, irrigation/2, color = drought_level)) +
-    scale_y_continuous(name = "Mean moisture content (%)\n",
-                       sec.axis = sec_axis(~.*2, name="Irrigation volume (ml)")) +
+(irrigation_time_series <- ggplot(moisture, aes(day, mean_moisture)) +
+    geom_point(aes(color = irrigation)) +
+    geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_bw() +
     facet_wrap(~ soil_type, scales = "fixed") +
+    ylab("Mean moisture content (%)\n") +
     xlab("\nDay since start of experiment") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
@@ -121,7 +119,7 @@ moisture <- moisture %>%
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
           legend.text = element_text(size = 10, face = "italic"),  
           legend.title = element_blank(),  # Removing the legend title 
-          legend.position = "bottom")) 
+          legend.position = "right")) 
 
 # Graph of field capacity % across time
 (field_capacity_time_series <- ggplot(moisture, aes(day, field_capacity_percent, color = drought_level, fill = drought_level)) +
