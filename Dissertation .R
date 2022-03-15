@@ -110,7 +110,7 @@ moisture <- moisture %>%
     geom_point(size = 5, aes(color = irrigation)) +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_ipsum() +
-    theme_bw() + 
+    theme_bw() +
     facet_wrap(~ soil_type, scales = "fixed") +
     ylab("Mean moisture content (%)\n") +
     xlab("\nDay since start of experiment"))
@@ -171,6 +171,12 @@ ratio <- ratio %>%
   # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
 # Graphs root/shoot ----
+# Heatmap R/S + soil + drought
+(root_shoot_heatmap <- ggplot(ratio, aes(soil, drought, fill = Leaf_area)) +
+   geom_tile())
+
+# ggsave(root_shoot_heatmap, file = "outputs/root_shoot_heatmap.png", width = 12, height = 7) 
+
 # Graph with log total biomass and log root/shoot 
 (biomass_root_shoot_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
    geom_point(aes(color = drought)) +
