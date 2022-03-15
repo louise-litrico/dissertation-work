@@ -7,6 +7,7 @@ library(scales)
 library(vegan)
 library(gplots)
 library(patchwork)
+library(hrbrthemes)
 
 # Data sets ----
 ratio <- read_excel("root-shoot.xls")
@@ -108,18 +109,11 @@ moisture <- moisture %>%
 (irrigation_time_series <- ggplot(moisture, aes(day, mean_moisture)) +
     geom_point(size = 5, aes(color = irrigation)) +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
-    theme_bw() +
+    theme_ipsum() +
+    theme_bw() + 
     facet_wrap(~ soil_type, scales = "fixed") +
     ylab("Mean moisture content (%)\n") +
-    xlab("\nDay since start of experiment") +
-    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
-          axis.text.y = element_text(size = 10),
-          axis.title = element_text(size = 12, face = "plain"),                        
-          panel.grid = element_blank(),  
-          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.text = element_text(size = 10, face = "italic"),  
-          legend.title = element_blank(),  # Removing the legend title 
-          legend.position = "right")) 
+    xlab("\nDay since start of experiment"))
 
 # ggsave(irrigation_time_series, file = "outputs/irrigation_time_series.png", width = 12, height = 7) 
 
