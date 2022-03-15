@@ -43,9 +43,9 @@ moisture <- moisture %>%
   mutate(soil_type = as_factor(soil_type), pot = as_factor(pot)) %>% 
   tidyr::separate(date, c("year", "month", "day"), sep = "-", remove = FALSE) %>% 
   select(-year,-month) %>% 
-  mutate(day = case_when(day == "09" ~ 1, day == "11" ~ 3, day == "13" ~ 5, 
-                         day == "16" ~ 8, day == "18" ~ 10, day == "20" ~ 12, 
-                         day == "23" ~ 15)) %>% 
+  mutate(day = case_when(day == "06" ~ 1, day == "09" ~ 3, day == "11" ~ 5, 
+                         day == "13" ~ 8, day == "16" ~ 10, day == "18" ~ 12, 
+                         day == "20" ~ 15, day == "23" ~ 18)) %>% 
   mutate(drought_level = case_when(pot == 1 ~ "50",
                                    pot == 2 ~ "75",
                                    pot == 3 ~ "100",
@@ -54,6 +54,7 @@ moisture <- moisture %>%
                                    pot == 6 ~ "100")) %>% 
   mutate(drought_level = as_factor(drought_level)) %>% 
   mutate(field_capacity = c(field_capacity_data$moisture_content,
+                           field_capacity_data$moisture_content,
                            field_capacity_data$moisture_content,
                            field_capacity_data$moisture_content,
                            field_capacity_data$moisture_content,
@@ -133,15 +134,15 @@ ratio <- ratio %>%
   rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
   filter(!root_shoot > 2.5, !Leaf_area > 5) %>%   # take out the outliers
-  mutate(biomass_log = log(Dry_weight_total), root_shoot_log = log(root_shoot))
+  mutate(biomass_log = log(Dry_weight_total), root_shoot_log = log(root_shoot)) %>% 
+  mutate(leaf_area_ratio = Leaf_area/Dry_weight_total)
   # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
 # Graphs root/shoot ----
 # Graph with log total biomass and log root/shoot 
 (biomass_root_shoot_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
-   geom_point(aes(color = soil)) +
-   geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
-   facet_wrap(~ drought, scales = "fixed") +
+   geom_point(aes(color = drought)) +
+   geom_smooth(aes(color = drought), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
    theme_bw() +
    ylab("Log root/shoot ratio\n") +                             
    xlab("\nLog total biomass")  +
@@ -152,19 +153,6 @@ ratio <- ratio %>%
          legend.position = "right"))
 
 # ggsave(biomass_root_shoot_graph, file = "outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
-
-# Graph with log root/shoot and log leaf area 
-(leaf_area_root_shoot_graph <- ggplot(ratio, aes(log(Leaf_area), root_shoot_log)) +
-    geom_point(aes(color = soil)) +
-    geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
-    theme_bw() +
-    ylab("Log root/shoot ratio\n") +                             
-    xlab("\nLog leaf area")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "right"))
 
 # Boxplot log root/shoot + drought level
 (ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
@@ -205,6 +193,8 @@ ratio <- ratio %>%
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
+
+# ggsave(ratio_species_boxplot, file = "outputs/ratio_species_boxplot.png", width = 12, height = 7)
 
 # Three plots for variation of root/shoot within species
 (ratio_species_hist <- ggplot(ratio, aes(x = root_shoot)) +
@@ -273,6 +263,32 @@ coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>%
 # facet_wrap(~ drought, scales = "fixed")
   
 # Graphs leaf area ----
+# Graph with log root/shoot and log leaf area 
+(leaf_area_biomass_graph <- ggplot(ratio, aes(log(Leaf_area), biomass_log)) +
+   geom_point(aes(color = drought)) +
+   geom_smooth(aes(color = drought), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+   theme_bw() +
+   ylab("Log root/shoot ratio\n") +                             
+   xlab("\nLog leaf area")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "right"))
+
+# Graph log leaf area ratio and log 
+(biomass_leaf_ratio_graph <- ggplot(ratio, aes(biomass_log, log(leaf_area_ratio))) +
+    geom_point(aes(color = soil)) +
+    geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+    theme_bw() +
+    ylab("Log leaf area ratio\n") +                             
+    xlab("\nLog total biomass")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
+
 # Boxplot leaf area + species
 (leaf_area_boxplot_species <- ggplot(ratio, aes(species, Leaf_area, color = species)) +
    geom_boxplot() +
@@ -330,6 +346,18 @@ biomass_subset <- biomass_data %>%
 (total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, biomass, fill = drought)) +
     geom_bar(position = position_dodge(), stat = "identity") +
     facet_wrap(~ species, scales = "fixed") +
+    theme_bw() +
+    ylab("Total plant biomass (g)\n") +                             
+    xlab("\nDrought treatment")  +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "none"))
+
+# Plot total biomass and soil types 
+(total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, biomass, fill = drought)) +
+    geom_bar(position = position_dodge(), stat = "identity") +
     theme_bw() +
     ylab("Total plant biomass (g)\n") +                             
     xlab("\nDrought treatment")  +
@@ -456,11 +484,14 @@ bartlett.test(root_shoot ~ drought*species + soil, data = ratio)  # doesn't work
 fligner.test(root_shoot ~ drought*species + soil, data = ratio) 
 
 # Stats biomass ----
-total_biomass_model <- lm(biomass ~ drought, data = biomass_data)
+total_biomass_model <- lm(Dry_weight_total ~ drought, data = ratio)
 summary(total_biomass_model)
 
-total_biomass_model2 <- lm(biomass ~ species, data = biomass_data)
+total_biomass_model2 <- lm(Dry_weight_total ~ species, data = ratio)
 summary(total_biomass_model2)
+
+total_biomass_model3 <- lm(Dry_weight_total ~ soil, data = ratio)
+summary(total_biomass_model3)
 
 # Stats leaf area ----
 leaf_area_model <- lm(Leaf_area ~ species, data = ratio)
