@@ -328,7 +328,7 @@ coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
 
-# ggsave(leaf_area_boxplot_drought, file = "outputs/leaf_area_boxplot_drought.png", width = 12, height = 7)
+# ggsave(biomass_leaf_ratio_graph, file = "outputs/biomass_leaf_ratio_graph.png", width = 12, height = 7)
 
 # Boxplot leaf area + species
 (leaf_area_boxplot_species <- ggplot(ratio, aes(species, Leaf_area, color = species)) +
