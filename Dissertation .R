@@ -67,6 +67,24 @@ moisture <- moisture %>%
   filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
 
 # Graphs moisture ----
+# Graph weight and irrigation just for interest 
+(weight_time_series <- ggplot(moisture) +
+   geom_point(aes(day, weight, color = soil_type)) +
+   geom_smooth(formula = y ~ x, method = "lm", aes(day, weight, color = soil_type, fill = soil_type)) + # add se = FALSE to remove error shading
+   geom_point(aes(day, irrigation/0.15, color = soil_type)) +
+   scale_y_continuous(name = "Weight of pots (g)\n",
+                      sec.axis = sec_axis(~.*0.15, name="Irrigation volume (ml)")) +
+   theme_bw() +
+   xlab("\nDay since start of experiment") +
+   theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+         axis.text.y = element_text(size = 10),
+         axis.title = element_text(size = 12, face = "plain"),                        
+         panel.grid = element_blank(),  
+         plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+         legend.text = element_text(size = 10, face = "italic"),  
+         legend.title = element_blank(),  # Removing the legend title 
+         legend.position = "right")) 
+
 # Graph of moisture across time 
 (moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = drought_level)) +
     geom_point() +
