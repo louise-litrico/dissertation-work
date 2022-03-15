@@ -469,6 +469,10 @@ biomass_data <- ratio %>%
 # ggsave(biomass_species_soil_barplot, file = "outputs/biomass_species_soil_barplot.png", width = 12, height = 7)
 
 # Stats moisture and field capacity ----
+moisture_model1 <- lm(field_capacity_percent ~ soil_type*drought_level*day, data = moisture)
+summary(moisture_model1)
+anova(moisture_model1)
+
 moisture_model <- lm(field_capacity ~ soil_type, data = moisture)
 summary(moisture_model)
 
@@ -482,25 +486,18 @@ moisture_model_4 <- lm(mean_moisture ~ drought_level + soil_type, data = moistur
 summary(moisture_model_4)
 
 # Stats ratio ----
-ratio_model <- lm(root_shoot ~ drought, data = ratio)
+ratio_model1 <- lm(root_shoot ~ drought*species*soil, data = ratio)
 summary(ratio_model)
 anova(ratio_model)
 plot(ratio_model)
 
+ratio_model <- lm(root_shoot ~ drought, data = ratio)
+summary(ratio_model)
+plot(ratio_model)
+
 ratio_model2 <- lm(root_shoot ~ soil, data = ratio)
 summary(ratio_model2)
-anova(ratio_model2)
 plot(ratio_model2)
-
-ratio_model3 <- lm(root_shoot ~ drought*species, data = ratio)
-summary(ratio_model3)
-anova(ratio_model3)
-plot(ratio_model3)
-
-ratio_model4 <- lm(root_shoot ~ soil + species, data = ratio)
-summary(ratio_model4)
-anova(ratio_model4)
-plot(ratio_model4)
 
 ratio_model5 <- lm(root_shoot ~ species, data = ratio)
 summary(ratio_model5)
@@ -519,6 +516,7 @@ fligner.test(root_shoot ~ drought*species + soil, data = ratio)
 total_biomass_model <- lm(Dry_weight_total ~ species + drought*soil, data = ratio)
 summary(total_biomass_model)
 anova(total_biomass_model)
+plot(total_biomass_model)
 
 # Stats leaf area ----
 leaf_area_model <- lm(Leaf_area ~ species, data = ratio)
@@ -528,6 +526,7 @@ plot(leaf_area_model)
 
 leaf_area_ratio_model <- lm(leaf_area_ratio ~ species, data = ratio)
 summary(leaf_area_ratio_model)
+anova(leaf_area_ratio_model)
 plot(leaf_area_ratio_model)
 
 # Verification of assumptions # 
