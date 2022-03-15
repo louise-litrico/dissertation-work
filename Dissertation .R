@@ -380,6 +380,12 @@ biomass_data <- ratio %>%
   select(-moisture,-weight)
 
 # Graph biomass ----
+# Heatmap biomass + soil + drought
+(biomass_heatmap <- ggplot(ratio, aes(soil, drought, fill = Dry_weight_total)) +
+   geom_tile())
+
+# ggsave(biomass_heatmap, file = "outputs/biomass_heatmap.png", width = 12, height = 7) 
+
 # Plot total biomass and soil types 
 (total_biomass_drought_barplot <- ggplot(ratio, aes(drought, Dry_weight_total, fill = drought, color = drought)) +
     geom_bar(position = position_dodge(), stat = "identity") +
@@ -512,12 +518,6 @@ fligner.test(root_shoot ~ drought*species + soil, data = ratio)
 # Stats biomass ----
 total_biomass_model <- lm(Dry_weight_total ~ drought*soil + species, data = ratio)
 summary(total_biomass_model)
-
-total_biomass_model2 <- lm(Dry_weight_total ~ species, data = ratio)
-summary(total_biomass_model2)
-
-total_biomass_model3 <- lm(Dry_weight_total ~ soil, data = ratio)
-summary(total_biomass_model3)
 
 # Stats leaf area ----
 leaf_area_model <- lm(Leaf_area ~ species, data = ratio)
