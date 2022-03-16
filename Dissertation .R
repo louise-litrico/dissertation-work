@@ -48,13 +48,13 @@ moisture <- moisture %>%
   mutate(day = case_when(day == "06" ~ 1, day == "09" ~ 3, day == "11" ~ 5, 
                          day == "13" ~ 8, day == "16" ~ 10, day == "18" ~ 12, 
                          day == "20" ~ 15, day == "23" ~ 18)) %>% 
-  mutate(drought_level = case_when(pot == 1 ~ "50",
+  mutate(irrigation_level = case_when(pot == 1 ~ "50",  # used to be drought_level but didn't make sense
                                    pot == 2 ~ "75",
                                    pot == 3 ~ "100",
                                    pot == 4 ~ "50",
                                    pot == 5 ~ "75",
                                    pot == 6 ~ "100")) %>% 
-  mutate(drought_level = as_factor(drought_level)) %>% 
+  mutate(irrigation_level = as_factor(irrigation_level)) %>% 
   mutate(field_capacity = c(field_capacity_data$moisture_content,
                            field_capacity_data$moisture_content,
                            field_capacity_data$moisture_content,
@@ -87,10 +87,10 @@ moisture <- moisture %>%
          legend.position = "right")) 
 
 # Graph of moisture across time 
-(moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = drought_level)) +
+(moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = irrigation_level)) +
     geom_point() +
     facet_wrap(~ soil_type, scales = "fixed") +
-    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
+    geom_smooth(formula = y ~ x, method = "lm", aes(fill = irrigation_level)) + # add se = FALSE to remove error shading
     theme_bw() +
     ylab("Mean moisture content (%)\n") +                             
     xlab("\nDate") +
@@ -118,7 +118,7 @@ moisture <- moisture %>%
 # ggsave(irrigation_time_series, file = "outputs/irrigation_time_series.png", width = 12, height = 7) 
 
 # Graph of field capacity % across time
-(field_capacity_time_series <- ggplot(moisture, aes(day, field_capacity_percent, color = drought_level, fill = drought_level)) +
+(field_capacity_time_series <- ggplot(moisture, aes(day, field_capacity_percent, color = irrigation_level, fill = drought_level)) +
     geom_point() +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_bw() +
@@ -137,34 +137,29 @@ moisture <- moisture %>%
 # ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
 # whole figure tells us that there seems to be significant differences between soil types AND between drought treatments 
 
-# Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot
-subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & drought_level == "100%")
-
-(field_capacity_time_series <- ggplot(subset_moisture_soil_2, aes(date, field_capacity_percent, color = pot)) +
-    geom_point() +
-    geom_smooth(formula = y ~ x, method = "lm", aes(fill = drought_level)) + # add se = FALSE to remove error shading
-    theme_bw() +
-    ylab("Moisture content (as a % of soil moisture content at field capacity)\n") +                             
-    xlab("\nDate") +
-    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
-          axis.text.y = element_text(size = 10),
-          axis.title = element_text(size = 12, face = "plain"),                        
-          panel.grid = element_blank(),  
-          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.text = element_text(size = 10, face = "italic"),  
-          legend.title = element_blank(),  # Removing the legend title 
-          legend.position = "bottom")) 
-
-pot_model <- lm(drought_level_percent ~ pot, data = subset_moisture_soil_2)
-summary(pot_model)
-anova(pot_model)
-plot(pot_model)
+# # Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot
+# subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & irrigation_level == "100")
+# 
+# (field_capacity_time_series <- ggplot(subset_moisture_soil_2, aes(date, field_capacity_percent, color = pot)) +
+#     geom_point() +
+#     geom_smooth(formula = y ~ x, method = "lm", aes(fill = irrigation_level)) + # add se = FALSE to remove error shading
+#     theme_bw() +
+#     ylab("Moisture content (as a % of soil moisture content at field capacity)\n") +                             
+#     xlab("\nDate") +
+#     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+#           axis.text.y = element_text(size = 10),
+#           axis.title = element_text(size = 12, face = "plain"),                        
+#           panel.grid = element_blank(),  
+#           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+#           legend.text = element_text(size = 10, face = "italic"),  
+#           legend.title = element_blank(),  # Removing the legend title 
+#           legend.position = "bottom")) 
 
 # Data manip ratio ----
 # Rename columns and create factor levels for species, drought level and soil type #
 ratio <- ratio %>% 
-  rename(root_shoot = "Root/Shoot", drought = Drought_level, soil = Soil_Type, species = Species) %>% 
-  mutate(species = as.factor(species), drought = as.factor(drought), soil = as.factor(soil)) %>% 
+  rename(root_shoot = "Root/Shoot", irrigation_level = Drought_level, soil = Soil_Type, species = Species) %>% 
+  mutate(species = as.factor(species), irrigation_level = as.factor(irrigation_level), soil = as.factor(soil)) %>% 
   filter(!root_shoot > 2.5, !Leaf_area > 5) %>%   # take out the outliers
   mutate(biomass_log = log(Dry_weight_total), root_shoot_log = log(root_shoot)) %>% 
   mutate(leaf_area_ratio = Leaf_area/Dry_weight_total)
@@ -172,15 +167,15 @@ ratio <- ratio %>%
 
 # Graphs root/shoot ----
 # Heatmap R/S + soil + drought
-(root_shoot_heatmap <- ggplot(ratio, aes(soil, drought, fill = root_shoot)) +
+(root_shoot_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = root_shoot)) +
    geom_tile())
 
 # ggsave(root_shoot_heatmap, file = "outputs/root_shoot_heatmap.png", width = 12, height = 7) 
 
 # Graph with log total biomass and log root/shoot 
 (biomass_root_shoot_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
-   geom_point(aes(color = drought)) +
-   geom_smooth(aes(color = drought), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+   geom_point(aes(color = irrigation_level)) +
+   geom_smooth(aes(color = irrigation_level), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
    theme_bw() +
    ylab("Log root/shoot ratio\n") +                             
    xlab("\nLog total biomass")  +
@@ -205,11 +200,11 @@ ratio <- ratio %>%
           legend.position = "right"))
 
 # Boxplot  root/shoot + drought level
-(ratio_boxplot <- ggplot(ratio, aes(drought, root_shoot)) +
-    geom_boxplot(aes(color = drought)) +
+(ratio_boxplot <- ggplot(ratio, aes(irrigation_level, root_shoot)) +
+    geom_boxplot(aes(color = irrigation_level)) +
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
-    xlab("\nDrought level")  +
+    xlab("\nIrrigation level")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
@@ -248,7 +243,7 @@ ratio <- ratio %>%
 
 # Three plots for variation of root/shoot within species
 (ratio_species_hist <- ggplot(ratio, aes(x = root_shoot)) +
-   geom_histogram(aes(fill = drought), bins = 25) +
+   geom_histogram(aes(fill = irrigation_level), bins = 25) +
    theme_bw() +
    facet_wrap(~ species, scales = "fixed") +
    xlab("Root/shoot ratio")  +
@@ -261,11 +256,11 @@ ratio <- ratio %>%
 # ggsave(ratio_species_hist, file = "outputs/ratio_species_hist.png", width = 12, height = 7)
 
 # Boxplot root/shoot + drought level + soil types
-(ratio_drought_soil_boxplot <- ggplot(ratio, aes(drought, root_shoot, color = soil)) +
+(ratio_drought_soil_boxplot <- ggplot(ratio, aes(irrigation_level, root_shoot, color = soil)) +
     geom_boxplot() +
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
-    xlab("\nDrought level")  +
+    xlab("\nIrrigation level")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
@@ -275,19 +270,19 @@ ratio <- ratio %>%
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
 # Graph root and shoot allometric regression 
-slopes <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 100)$coefficients[1]),
-            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 75)$coefficients[1]),
-            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 50)$coefficients[1]))
-slopes2 <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 100)$coefficients[2]),
-             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 75)$coefficients[2]),
-             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, drought == 50)$coefficients[2]))
+slopes <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 100)$coefficients[1]),
+            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 75)$coefficients[1]),
+            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 50)$coefficients[1]))
+slopes2 <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 100)$coefficients[2]),
+             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 75)$coefficients[2]),
+             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 50)$coefficients[2]))
 
 coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>% 
-  rename(intercept = slopes, slope = slopes2, drought = c.100..75..50.)
+  rename(intercept = slopes, slope = slopes2, irrigation_level = c.100..75..50.)
 
 (root_shoot_graph <- ggplot(ratio, aes(Dry_weight_root, Dry_weight_shoot)) +
-    geom_point(aes(color = drought)) +
-    stat_smooth(aes(color = drought), se = FALSE, method = "lm") +
+    geom_point(aes(color = irrigation_level)) +
+    stat_smooth(aes(color = irrigation_level), se = FALSE, method = "lm") +
     theme_bw() +
     ylab("Plant shoot biomass (g)\n") +                             
     xlab("\nPlant root biomass (g)") +
@@ -358,11 +353,11 @@ ggsave(leaf_area_boxplot_species, file = "outputs/leaf_area_boxplot_species.png"
 # ggsave(leaf_area_boxplot_soil, file = "outputs/leaf_area_boxplot_drought.png", width = 12, height = 7)
 
 # Boxplot leaf area + drought
-(leaf_area_boxplot_drought <- ggplot(ratio, aes(drought, Leaf_area, color = drought)) +
+(leaf_area_boxplot_drought <- ggplot(ratio, aes(irrigation_level, Leaf_area, color = irrigation_level)) +
    geom_boxplot() +
    theme_bw() +
    ylab("Leaf area (cm2)\n") +                             
-   xlab("\nDrought level")  +
+   xlab("\nIrrigation level")  +
    theme(axis.text = element_text(size = 12),
          axis.title = element_text(size = 14, face = "plain"),                     
          panel.grid = element_blank(),       
@@ -373,25 +368,25 @@ ggsave(leaf_area_boxplot_species, file = "outputs/leaf_area_boxplot_species.png"
 
 # Data manip biomass ----
 biomass_data <- ratio %>% 
-  select(drought, soil, species, Dry_weight_shoot, Dry_weight_root, Dry_weight_total) %>% 
+  select(irrigation_level, soil, species, Dry_weight_shoot, Dry_weight_root, Dry_weight_total) %>% 
   gather(., characteristic, biomass, c(4:6)) %>% 
   tidyr::separate(characteristic, c("moisture", "weight", "area"), sep = "_", remove = TRUE) %>% 
   select(-moisture,-weight)
 
 # Graph biomass ----
 # Heatmap biomass + soil + drought
-(biomass_heatmap <- ggplot(ratio, aes(soil, drought, fill = Dry_weight_total)) +
+(biomass_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = Dry_weight_total)) +
    geom_tile())
 
 # ggsave(biomass_heatmap, file = "outputs/biomass_heatmap.png", width = 12, height = 7) 
 
 # Plot total biomass and soil types 
-(total_biomass_drought_barplot <- ggplot(ratio, aes(drought, Dry_weight_total, fill = drought, color = drought)) +
+(total_biomass_drought_barplot <- ggplot(ratio, aes(irrigation_level, Dry_weight_total, fill = irrigation_level, color = irrigation_level)) +
     geom_bar(position = position_dodge(), stat = "identity") +
     theme_bw() +
     facet_wrap(~ species, scales = "fixed") +
     ylab("Total plant biomass (g)\n") +                             
-    xlab("\nDrought treatment")  +
+    xlab("\nIrrigation level")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
@@ -401,19 +396,19 @@ biomass_data <- ratio %>%
 # with the mean and error bars instead?
 # biomass_subset <- biomass_data %>% 
 #   filter(area %in% c("total")) %>% 
-#   group_by(drought, species) %>% 
+#   group_by(irrigation_level, species) %>% 
 #   mutate(mean = mean(biomass), sd = sd(biomass)) %>% 
-#   group_by(drought, species, mean, sd) %>% 
+#   group_by(irrigation_level, species, mean, sd) %>% 
 #   tally() %>% 
 #   ungroup() 
 #   
-# (total_biomass_drought_barplot <- ggplot(biomass_subset, aes(drought, mean, fill = drought)) +
+# (total_biomass_drought_barplot <- ggplot(biomass_subset, aes(irrigation_level, mean, fill = irrigation_level)) +
 #    geom_bar(position = position_dodge(), stat = "identity") +
 #    geom_errorbar(aes(x = drought, ymin = mean-sd, ymax = mean+sd, width=0.4)) +
 #    facet_wrap(~ species, scales = "fixed") +
 #    theme_bw() +
 #    ylab("Total plant biomass (g)\n") +                             
-#    xlab("\nDrought treatment")  +
+#    xlab("\nIrrigation level")  +
 #    theme(axis.text = element_text(size = 12),
 #          axis.title = element_text(size = 14, face = "plain"),                     
 #          panel.grid = element_blank(),       
@@ -422,23 +417,23 @@ biomass_data <- ratio %>%
 
 # ggsave(total_biomass_drought_barplot, file = "outputs/total_biomass_drought_barplot.png", width = 12, height = 7)
 
-# Barplot biomass in different parts of plant per drought treatment and species 
-(biomass_drought_species_barplot <- ggplot(biomass_data, aes(drought, biomass , fill = drought)) +
-  geom_bar(position = position_dodge(), stat = "identity") +
-  facet_wrap(~ species, scales = "fixed") +
-  theme_bw() +
-  ylab("Biomass (g)\n") +                             
-  xlab("\nPlant part")  +
-  theme(axis.text = element_text(size = 12),
-        axis.title = element_text(size = 14, face = "plain"),                     
-        panel.grid = element_blank(),       
-        plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-        legend.position = "right"))
-
-# ggsave(biomass_drought_species_barplot, file = "outputs/biomass_drought_species_barplot.png", width = 12, height = 7)
+# # Barplot biomass in different parts of plant per drought treatment and species 
+# (biomass_drought_species_barplot <- ggplot(biomass_data, aes(irrigation_level, biomass , fill = irrigation_level)) +
+#   geom_bar(position = position_dodge(), stat = "identity") +
+#   facet_wrap(~ species, scales = "fixed") +
+#   theme_bw() +
+#   ylab("Biomass (g)\n") +                             
+#   xlab("\nIrrigation level")  +
+#   theme(axis.text = element_text(size = 12),
+#         axis.title = element_text(size = 14, face = "plain"),                     
+#         panel.grid = element_blank(),       
+#         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+#         legend.position = "right"))
+# 
+# # ggsave(biomass_drought_species_barplot, file = "outputs/biomass_drought_species_barplot.png", width = 12, height = 7)
 
 # Barplot biomass in different parts of plant per drought treatment and soil type
-(biomass_drought_soil_barplot <- ggplot(biomass_data, aes(area, biomass, fill = drought)) +
+(biomass_drought_soil_barplot <- ggplot(biomass_data, aes(area, biomass, fill = irrigation_level)) +
     geom_bar(position = position_dodge(), stat = "identity") +
     facet_wrap(~ soil, scales = "fixed") +
     theme_bw() +
@@ -468,7 +463,7 @@ biomass_data <- ratio %>%
 # ggsave(biomass_species_soil_barplot, file = "outputs/biomass_species_soil_barplot.png", width = 12, height = 7)
 
 # Stats moisture and field capacity ----
-moisture_model1 <- lm(field_capacity_percent ~ soil_type*drought_level*day, data = moisture)
+moisture_model1 <- lm(field_capacity_percent ~ soil_type*irrigation_level*day, data = moisture)
 summary(moisture_model1)
 anova(moisture_model1)
 
@@ -478,19 +473,19 @@ summary(moisture_model)
 moisture_model_2 <- lm(field_capacity_percent ~ day + soil_type, data = moisture)
 summary(moisture_model_2)
 
-moisture_model_3 <- lm(field_capacity_percent ~ drought_level + soil_type, data = moisture)
+moisture_model_3 <- lm(field_capacity_percent ~ irrigation_level + soil_type, data = moisture)
 summary(moisture_model_3)
 
-moisture_model_4 <- lm(mean_moisture ~ drought_level + soil_type, data = moisture)
+moisture_model_4 <- lm(mean_moisture ~ irrigation_level + soil_type, data = moisture)
 summary(moisture_model_4)
 
 # Stats ratio ----
-ratio_model1 <- lm(root_shoot ~ drought*species*soil, data = ratio)
+ratio_model1 <- lm(root_shoot ~ irrigation_level*species*soil, data = ratio)
 summary(ratio_model)
 anova(ratio_model)
 plot(ratio_model)
 
-ratio_model <- lm(root_shoot ~ drought, data = ratio)
+ratio_model <- lm(root_shoot ~ irrigation_level, data = ratio)
 summary(ratio_model)
 plot(ratio_model)
 
@@ -508,11 +503,11 @@ AIC(ratio_model, ratio_model2, ratio_model3)  # can I use AIC for lm???
 # Verification of assumptions
 ratio_resids <- resid(ratio_model2)
 shapiro.test(ratio_resids)
-bartlett.test(root_shoot ~ drought*species + soil, data = ratio)  # doesn't work with interaction terms? 
-fligner.test(root_shoot ~ drought*species + soil, data = ratio) 
+bartlett.test(root_shoot ~ irrigation_level*species + soil, data = ratio)  # doesn't work with interaction terms? 
+fligner.test(root_shoot ~ irrigation_level*species + soil, data = ratio) 
 
 # Stats biomass ----
-total_biomass_model <- lm(Dry_weight_total ~ species + drought*soil, data = ratio)
+total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
 summary(total_biomass_model)
 anova(total_biomass_model)
 plot(total_biomass_model)
@@ -531,33 +526,33 @@ plot(leaf_area_ratio_model)
 # Verification of assumptions # 
 leaf_resids <- resid(leaf_area_model)
 shapiro.test(leaf_resids)
-bartlett.test(Leaf_area ~ drought*soil*species, data = ratio)  # doesn't work with interaction terms? 
+bartlett.test(Leaf_area ~ irrigation_level*soil*species, data = ratio)  # doesn't work with interaction terms? 
 
 # To see which drought level drives the significant results #
-ratio_aov <- aov(root_shoot ~ drought*soil*species, data = ratio)
+ratio_aov <- aov(root_shoot ~ irrigation_level*soil*species, data = ratio)
 TukeyHSD(ratio_aov)
 
 # Generalized linear models ----
 # check family 
 hist(ratio$root_shoot)
 
-generalized_ratio <- glm(root_shoot ~ drought*soil*species, family = gaussian, data = ratio)
+generalized_ratio <- glm(root_shoot ~ irrigation_level*soil*species, family = gaussian, data = ratio)
 summary(generalized_ratio)
 
-generalized_ratio2 <- glm(root_shoot ~ drought*soil + species, family = gaussian, data = ratio)
+generalized_ratio2 <- glm(root_shoot ~ irrigation_level*soil + species, family = gaussian, data = ratio)
 summary(generalized_ratio2)
 
-generalized_ratio3 <- glm(root_shoot ~ drought + soil + species, family = gaussian, data = ratio)
+generalized_ratio3 <- glm(root_shoot ~ irrigation_level + soil + species, family = gaussian, data = ratio)
 summary(generalized_ratio3)
 
 AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
 # weird because I get different results than for the ANOVA...?
 
 # NMDS + permanova ----
-(ratio.fit <- adonis(root_shoot ~ drought*soil*species, ratio, 
-                      permutations = 500, method = "bray"))  # weird because shows effect of drought + species + soil which is different from ANOVA results
+(ratio.fit <- adonis(root_shoot ~ irrigation_level*soil*species, ratio, 
+                      permutations = 500, method = "bray"))  # weird because shows effect of irrigation_level + species + soil which is different from ANOVA results
 
-(leaf_area.fit <- adonis(Leaf_area ~ drought*soil*species, ratio, 
+(leaf_area.fit <- adonis(Leaf_area ~ irrigation_level*soil*species, ratio, 
                      permutations = 500, method = "bray"))  # only species have significant difference which is same result as ANOVA
 
 # pairwise.adonis(invert[,5:18], invert$Site)  # post hoc test 
@@ -565,10 +560,10 @@ ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 2, trymax=100)  #
 # par(mfrow=c(1,1))
 # ratio.NMDS$stress
 
-group <- as.character(ratio$drought)
-colours <- as.character(ratio$drought)
+group <- as.character(ratio$irrigation_level)
+colours <- as.character(ratio$irrigation_level)
 
-as.character(ratio$drought) %>% 
+as.character(ratio$irrigation_level) %>% 
   replace(colours=="100", "#ddffa2") %>% 
   replace(colours=="75", "#a9c3e1") %>% 
   replace(colours=="50", "#ff4f4f") -> colours
@@ -590,10 +585,10 @@ legend('bottomright', legend=c("0m","6m","12m","18m"), col=unique(colours),
 legend('bottomleft', legend="stress = 0.042", bty = "n")
 
 # MANOVA ----
-(manova1 <- manova(cbind(root_shoot, Leaf_area) ~ drought + soil + species, ratio))
+(manova1 <- manova(cbind(root_shoot, Leaf_area) ~ irrigation_level + soil + species, ratio))
 summary(manova1)
 summary.aov(manova1)
 
-plotmeans(ratio$root_shoot ~ ratio$drought)
+plotmeans(ratio$root_shoot ~ ratio$irrigation_level)
 plotmeans(ratio$root_shoot ~ ratio$species)
 plotmeans(ratio$root_shoot ~ ratio$soil)
