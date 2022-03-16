@@ -174,8 +174,8 @@ ratio <- ratio %>%
 
 # Graph with log total biomass and log root/shoot 
 (biomass_root_shoot_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
-   geom_point(aes(color = irrigation_level)) +
-   geom_smooth(aes(color = irrigation_level), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+   geom_point(aes(color = species)) +
+   geom_smooth(aes(color = species), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
    theme_bw() +
    ylab("Log root/shoot ratio\n") +                             
    xlab("\nLog total biomass")  +
@@ -270,19 +270,19 @@ ratio <- ratio %>%
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
 # Graph root and shoot allometric regression 
-slopes <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 100)$coefficients[1]),
-            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 75)$coefficients[1]),
-            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 50)$coefficients[1]))
-slopes2 <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 100)$coefficients[2]),
-             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 75)$coefficients[2]),
-             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, irrigation_level == 50)$coefficients[2]))
+slopes <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Basil")$coefficients[1]),
+            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Dill")$coefficients[1]),
+            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Parsley")$coefficients[1]))
+slopes2 <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Basil")$coefficients[2]),
+             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Dill")$coefficients[2]),
+             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Parsley")$coefficients[2]))
 
-coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>% 
-  rename(intercept = slopes, slope = slopes2, irrigation_level = c.100..75..50.)
+coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>% 
+  rename(intercept = slopes, slope = slopes2, species = c..Basil....Dill....Parlsey..)
 
-(root_shoot_graph <- ggplot(ratio, aes(Dry_weight_root, Dry_weight_shoot)) +
-    geom_point(aes(color = irrigation_level)) +
-    stat_smooth(aes(color = irrigation_level), se = FALSE, method = "lm") +
+(root_shoot_graph <- ggplot(ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
+    geom_point(aes(color = species)) +
+    stat_smooth(aes(color = species), se = FALSE, method = "lm") +
     theme_bw() +
     ylab("Plant shoot biomass (g)\n") +                             
     xlab("\nPlant root biomass (g)") +
@@ -291,22 +291,7 @@ coefficients <- data.frame(slopes, slopes2, c(100,75,50)) %>%
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
-    # this doesn't work for some reason...? 
-    # annotate("text", x = 50, y = 50, label = "0.931",  
-    #        size = 4) +
-    # annotate("text", x = 40, y = 40, label = "0.713",
-    #        size = 4) +
-    # annotate("text", x = 30, y = 30, label = "0.795",
-    #        size = 4))
 
-# If I want to add an arrow that points from the label to the curve? 
-# # geom_curve(aes(x = 50, y = 60, xend = mean(carex$hits) + 2, yend = 60),
-#              arrow = arrow(length = unit(0.07, "inch")), size = 0.7,
-#              color = "grey30", curvature = 0.3)
-
-# ggsave(root_shoot_graph, file = "outputs/root_shoot_graph.png", width = 12, height = 7)
-# facet_wrap(~ drought, scales = "fixed")
-  
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
 (biomass_leaf_ratio_graph <- ggplot(ratio, aes(biomass_log, log(leaf_area_ratio))) +
