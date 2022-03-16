@@ -270,12 +270,12 @@ ratio <- ratio %>%
 # ggsave(ratio_drought_soil_boxplot, file = "outputs/ratio_drought_soil_boxplot.png", width = 12, height = 7)
 
 # Graph root and shoot allometric regression 
-slopes <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Basil")$coefficients[1]),
-            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Dill")$coefficients[1]),
-            as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Parsley")$coefficients[1]))
-slopes2 <- c(as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Basil")$coefficients[2]),
-             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Dill")$coefficients[2]),
-             as.numeric(lm(Dry_weight_shoot ~ Dry_weight_root, ratio, species == "Parsley")$coefficients[2]))
+slopes <- c(as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species == "Basil")$coefficients[1]),
+            as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species == "Dill")$coefficients[1]),
+            as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species == "Parsley")$coefficients[1]))
+slopes2 <- c(as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species == "Basil")$coefficients[2]),
+             as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species == "Dill")$coefficients[2]),
+             as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species == "Parsley")$coefficients[2]))
 
 coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>% 
   rename(intercept = slopes, slope = slopes2, species = c..Basil....Dill....Parlsey..)
@@ -283,9 +283,10 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
 (root_shoot_graph <- ggplot(ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
     geom_point(aes(color = species)) +
     stat_smooth(aes(color = species), se = FALSE, method = "lm") +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black", size = 1) +
     theme_bw() +
-    ylab("Plant shoot biomass (g)\n") +                             
-    xlab("\nPlant root biomass (g)") +
+    ylab("Plant root biomass (g)\n") +                             
+    xlab("\nPlant shoot biomass (g)") +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
