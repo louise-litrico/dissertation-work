@@ -8,6 +8,8 @@ library(vegan)
 library(gplots)
 library(patchwork)
 library(hrbrthemes)
+library(car)
+library(multcomp)
 
 # Data sets ----
 ratio <- read_excel("root-shoot.xls")
@@ -578,3 +580,42 @@ summary.aov(manova1)
 plotmeans(ratio$root_shoot ~ ratio$irrigation_level)
 plotmeans(ratio$root_shoot ~ ratio$species)
 plotmeans(ratio$root_shoot ~ ratio$soil)
+
+# ANCOVA ----
+# First test assumptions with chi-squared test and Levene's test
+explanatory_table = table(ratio$irrigation_level, ratio$species)
+print(explanatory_table)
+print(chisq.test(explanatory_table))
+# p-value > 0.05 so variables are independent 
+
+# For R/S ratio 
+leveneTest(log(root_shoot) ~ species, data = ratio)
+# p-value > 0.05 so variance is equal 
+# then actually fitting the model
+ancova_model <- aov(log(root_shoot) ~ species + irrigation_level, data = ratio)
+Anova(ancova_model, type="III") 
+# posthoc test 
+postHocs <- glht(ancova_model, linfct = mcp(species = "Tukey"))
+summary(postHocs)
+postHocs1 <- glht(ancova_model, linfct = mcp(irrigation_level = "Tukey"))
+summary(postHocs1)
+
+# For shoot biomass 
+leveneTest(log(Dry_weight_shoot) ~ species, data = ratio)
+# p-value > 0.05 so variance is equal 
+# then actually fitting the model
+ancova_model2 <- aov(log(Dry_weight_shoot) ~ species + irrigation_level, data = ratio)
+Anova(ancova_model2, type="III") 
+# posthoc test
+postHocs2 <- glht(ancova_model2, linfct = mcp(species = "Tukey"))
+summary(postHocs2)
+
+# For leaf area
+leveneTest(log(Leaf_area) ~ species, data = ratio)
+# p-value > 0.05 so variance is equal 
+# then actually fitting the model
+ancova_model3 <- aov(log(Leaf_area) ~ species + irrigation_level, data = ratio)
+Anova(ancova_model3, type="III") 
+# posthoc test 
+postHocs3 <- glht(ancova_model3, linfct = mcp(species = "Tukey"))
+summary(postHocs3)
