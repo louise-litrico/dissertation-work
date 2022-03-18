@@ -10,6 +10,7 @@ library(patchwork)
 library(hrbrthemes)
 library(car)
 library(multcomp)
+library(RColorBrewer)
 
 # Data sets ----
 ratio <- read_excel("root-shoot.xls")
@@ -50,7 +51,7 @@ anova(volumetric_model)
 moisture <- moisture %>% 
   mutate(soil_type = as_factor(soil_type), pot = as_factor(pot)) %>% 
   tidyr::separate(date, c("year", "month", "day"), sep = "-", remove = FALSE) %>% 
-  select(-year,-month) %>% 
+  dplyr::select(-year,-month) %>% 
   mutate(day = case_when(day == "06" ~ 1, day == "09" ~ 3, day == "11" ~ 5, 
                          day == "13" ~ 8, day == "16" ~ 10, day == "18" ~ 12, 
                          day == "20" ~ 15, day == "23" ~ 18)) %>% 
@@ -61,19 +62,34 @@ moisture <- moisture %>%
                                    pot == 5 ~ "75",
                                    pot == 6 ~ "100")) %>% 
   mutate(irrigation_level = as_factor(irrigation_level)) %>% 
-  mutate(field_capacity = c(field_capacity_data$moisture_content,
-                           field_capacity_data$moisture_content,
-                           field_capacity_data$moisture_content,
-                           field_capacity_data$moisture_content,
-                           field_capacity_data$moisture_content,
-                           field_capacity_data$moisture_content,
-                           field_capacity_data$moisture_content,
-                           field_capacity_data$moisture_content)) %>% 
-  mutate(field_capacity_percent = (mean_moisture*100)/field_capacity) %>% 
-  mutate(field_capacity_percent_sd = (sd*100)/field_capacity) %>% 
+  mutate(volumetric_water_content = c(field_capacity_data$volumetric_water_content*100,
+                           field_capacity_data$volumetric_water_content*100,
+                           field_capacity_data$volumetric_water_content*100,
+                           field_capacity_data$volumetric_water_content*100,
+                           field_capacity_data$volumetric_water_content*100,
+                           field_capacity_data$volumetric_water_content*100,
+                           field_capacity_data$volumetric_water_content*100,
+                           field_capacity_data$volumetric_water_content*100)) %>% 
+  mutate(volumetric_percent = (mean_moisture*100)/volumetric_water_content) %>% 
+  mutate(volumetric_percent_sd = (sd*100)/volumetric_water_content) %>% 
   filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
 
 # Graphs moisture ----
+# Boxplot mean moisture per irrigation treatment 
+(moisture_boxplot <- ggplot(moisture, aes(irrigation_level, mean_moisture)) +
+   geom_boxplot(aes(color = irrigation_level)) +
+   theme_bw() +
+   ylab("Mean volumetric water content (%)\n") +                             
+   xlab("\nSoil type")  +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "right"))
+moisture_model <- lm(mean_moisture ~ irrigation_level, data = moisture)
+summary(moisture_model)
+anova(moisture_model)
+
 # Graph weight and irrigation just for interest 
 (weight_time_series <- ggplot(moisture) +
    geom_point(aes(day, weight, color = soil_type)) +
@@ -93,43 +109,36 @@ moisture <- moisture %>%
          legend.position = "right")) 
 
 # Graph of moisture across time 
-(moisture_time_series <- ggplot(moisture, aes(date, mean_moisture, color = irrigation_level)) +
+(moisture_time_series <- ggplot(moisture, aes(day, mean_moisture, color = irrigation_level)) +
     geom_point() +
     facet_wrap(~ soil_type, scales = "fixed") +
     geom_smooth(formula = y ~ x, method = "lm", aes(fill = irrigation_level)) + # add se = FALSE to remove error shading
     theme_bw() +
-    ylab("Mean moisture content (%)\n") +                             
-    xlab("\nDate") +
+    scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+    ylab("Mean volumetric water content content (%)\n") +                             
+    xlab("\nDays since start of experiment") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
           axis.title = element_text(size = 12, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
           legend.text = element_text(size = 10, face = "italic"),  
-          legend.title = element_blank(),  # Removing the legend title 
+          legend.title = element_blank(), 
           legend.position = "bottom")) 
 
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
-# Graph of moisture % and irrigation volume 
-(irrigation_time_series <- ggplot(moisture, aes(day, mean_moisture)) +
-    geom_point(size = 5, aes(color = irrigation)) +
-    geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
-    theme_ipsum() +
-    theme_bw() +
-    facet_wrap(~ soil_type, scales = "fixed") +
-    ylab("Mean moisture content (%)\n") +
-    xlab("\nDay since start of experiment"))
-
-# ggsave(irrigation_time_series, file = "outputs/irrigation_time_series.png", width = 12, height = 7) 
-
-# Graph of field capacity % across time
-(field_capacity_time_series <- ggplot(moisture, aes(day, field_capacity_percent, color = irrigation_level, fill = drought_level)) +
+# Graph of VWC % across time
+(vwc_time_series <- ggplot(moisture, aes(day, volumetric_percent, color = irrigation_level, fill = irrigation_level)) +
     geom_point() +
     geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     theme_bw() +
+    scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ soil_type, scales = "fixed") +
-    ylab("Soil moisture (% of soil field capacity)\n") +                             
+    scale_y_continuous(limits = c(0, 300)) +
+    ylab("Volumetric water content (% of VWC at field capacity)\n") +                             
     xlab("\nTime (days since start of experiment)") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
@@ -140,26 +149,7 @@ moisture <- moisture %>%
           legend.title = element_blank(),  # Removing the legend title 
           legend.position = "bottom")) 
 
-# ggsave(field_capacity_time_series, file = "outputs/field_capacity_time_series.png", width = 12, height = 7) 
-# whole figure tells us that there seems to be significant differences between soil types AND between drought treatments 
-
-# # Trying to figure out what is going on with soil 2 100% moisture measures = large differences according to pot
-# subset_moisture_soil_2 <- filter(moisture, soil_type == "2" & irrigation_level == "100")
-# 
-# (field_capacity_time_series <- ggplot(subset_moisture_soil_2, aes(date, field_capacity_percent, color = pot)) +
-#     geom_point() +
-#     geom_smooth(formula = y ~ x, method = "lm", aes(fill = irrigation_level)) + # add se = FALSE to remove error shading
-#     theme_bw() +
-#     ylab("Moisture content (as a % of soil moisture content at field capacity)\n") +                             
-#     xlab("\nDate") +
-#     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
-#           axis.text.y = element_text(size = 10),
-#           axis.title = element_text(size = 12, face = "plain"),                        
-#           panel.grid = element_blank(),  
-#           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-#           legend.text = element_text(size = 10, face = "italic"),  
-#           legend.title = element_blank(),  # Removing the legend title 
-#           legend.position = "bottom")) 
+# ggsave(vwc_time_series, file = "outputs/vwc_time_series.png", width = 12, height = 7) 
 
 # Data manip ratio ----
 # Rename columns and create factor levels for species, drought level and soil type #
@@ -455,21 +445,13 @@ biomass_data <- ratio %>%
 # ggsave(biomass_species_soil_barplot, file = "outputs/biomass_species_soil_barplot.png", width = 12, height = 7)
 
 # Stats moisture and field capacity ----
-moisture_model1 <- lm(field_capacity_percent ~ soil_type*irrigation_level*day, data = moisture)
+moisture_model1 <- lm(volumetric_percent ~ soil_type*irrigation_level*day, data = moisture)
 summary(moisture_model1)
 anova(moisture_model1)
 
-moisture_model <- lm(field_capacity ~ soil_type, data = moisture)
+moisture_model <- lm(volumetric_percent ~ soil_type*day + irrigation_level, data = moisture)
 summary(moisture_model)
-
-moisture_model_2 <- lm(field_capacity_percent ~ day + soil_type, data = moisture)
-summary(moisture_model_2)
-
-moisture_model_3 <- lm(field_capacity_percent ~ irrigation_level + soil_type, data = moisture)
-summary(moisture_model_3)
-
-moisture_model_4 <- lm(mean_moisture ~ irrigation_level + soil_type, data = moisture)
-summary(moisture_model_4)
+anova(moisture_model)
 
 # Stats ratio ----
 ratio_model1 <- lm(root_shoot ~ irrigation_level*species*soil, data = ratio)
