@@ -22,15 +22,16 @@ moisture <- read_excel("moisture.xlsx")
 field_capacity_data <- field_capacity_data %>% 
   mutate(soil_type = as_factor(soil_type), pot_number = as_factor(pot_number)) %>% 
   mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soil
-  mutate(moisture_content = ((total_fresh/total_dry)-1))  # new column with soil moisture content
+  mutate(volumetric_water_content = water_content_gr/873.18)  # creating volumetric water content column in gr/cm3 
+  # mutate(moisture_content = ((total_fresh/total_dry)-1))  # new column with soil moisture content
 # should I add *100 or not??? 
 
-# Graph field capacity ----
+# Graph Volumetric water content  ----
 # Boxplot checking for differences of field_capacity between soil types
-(field_capacity_boxplot <- ggplot(field_capacity_data, aes(soil_type, moisture_content)) +
+(volumetric_boxplot <- ggplot(field_capacity_data, aes(soil_type, volumetric_water_content)) +
     geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
-    ylab("Field capacity\n") +                             
+    ylab("Volumetric water content (g/cm3)\n") +                             
     xlab("\nSoil Type")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
@@ -38,7 +39,10 @@ field_capacity_data <- field_capacity_data %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
 
-# ggsave(soil_moisture_boxplot, file = "outputs/field_capacity_boxplot.png", width = 12, height = 7) 
+# ggsave(volumetric_boxplot, file = "outputs/volumetric_boxplot.png", width = 12, height = 7) 
+volumetric_model <- lm(volumetric_water_content ~ soil_type, data = field_capacity_data)
+summary(volumetric_model)
+anova(volumetric_model)
 
 # Data manip moisture ----
 # moisture probe measures need to be plotted against time to see the progression 
