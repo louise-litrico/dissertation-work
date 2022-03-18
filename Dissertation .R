@@ -299,6 +299,8 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
 
+# ggsave(root_shoot_graph, file = "outputs/root_shoot_graph.png", width = 12, height = 7)
+
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
 (biomass_leaf_ratio_graph <- ggplot(ratio, aes(biomass_log, log(leaf_area_ratio))) +
