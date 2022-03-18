@@ -32,6 +32,7 @@ field_capacity_data <- field_capacity_data %>%
 (volumetric_boxplot <- ggplot(field_capacity_data, aes(soil_type, volumetric_water_content)) +
     geom_boxplot(aes(color = soil_type)) +
     theme_bw() +
+    scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
     ylab("Volumetric water content (g/cm3)\n") +                             
     xlab("\nSoil Type")  +
     theme(axis.text = element_text(size = 12),
@@ -79,6 +80,7 @@ moisture <- moisture %>%
 (moisture_boxplot <- ggplot(moisture, aes(irrigation_level, mean_moisture)) +
    geom_boxplot(aes(color = irrigation_level)) +
    theme_bw() +
+   scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
    ylab("Mean volumetric water content (%)\n") +                             
    xlab("\nSoil type")  +
    theme(axis.text = element_text(size = 12),
@@ -183,10 +185,12 @@ ratio <- ratio %>%
 
 # ggsave(biomass_root_shoot_graph, file = "outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
 # log graph colored by soil 
-(biomass_root_shoot_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
+(biomass_root_shoot2_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
     geom_point(aes(color = soil)) +
     geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+    facet_wrap(~ irrigation_level, scales = "fixed") +
     theme_bw() +
+    scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
     ylab("Log root/shoot ratio\n") +                             
     xlab("\nLog total biomass")  +
     theme(axis.text = element_text(size = 12),
@@ -195,10 +199,13 @@ ratio <- ratio %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
 
+# ggsave(biomass_root_shoot2_graph, file = "outputs/biomass_root_shoot2_graph.png", width = 12, height = 7) 
+
 # Boxplot  root/shoot + drought level
 (ratio_boxplot <- ggplot(ratio, aes(irrigation_level, root_shoot)) +
     geom_boxplot(aes(color = irrigation_level)) +
     theme_bw() +
+    scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     ylab("Root/shoot ratio\n") +                             
     xlab("\nIrrigation level")  +
     theme(axis.text = element_text(size = 12),
@@ -213,6 +220,7 @@ ratio <- ratio %>%
 (ratio_soil_boxplot <- ggplot(ratio, aes(soil, root_shoot)) +
     geom_boxplot(aes(color = soil)) +
     theme_bw() +
+    scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
     ylab("Root/shoot ratio\n") +                             
     xlab("\nSoil type")  +
     theme(axis.text = element_text(size = 12),
@@ -241,6 +249,7 @@ ratio <- ratio %>%
 (ratio_species_hist <- ggplot(ratio, aes(x = root_shoot)) +
    geom_histogram(aes(fill = irrigation_level), bins = 25) +
    theme_bw() +
+   scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
    facet_wrap(~ species, scales = "fixed") +
    xlab("Root/shoot ratio")  +
    theme(axis.text = element_text(size = 12),
@@ -255,7 +264,8 @@ ratio <- ratio %>%
 (ratio_drought_soil_boxplot <- ggplot(ratio, aes(irrigation_level, root_shoot, color = soil)) +
     geom_boxplot() +
     theme_bw() +
-    ylab("Root/shoot ratio\n") +                             
+    scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
+    ylab("Root/shoot ratio\n") +
     xlab("\nIrrigation level")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
@@ -295,7 +305,8 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
     geom_point(aes(color = soil)) +
     geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
     theme_bw() +
-    facet_wrap(~ species, scales = "fixed") +
+    scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
+    facet_wrap(~ irrigation_level, scales = "fixed") +
     ylab("Log leaf area ratio\n") +                             
     xlab("\nLog total biomass")  +
     theme(axis.text = element_text(size = 12),
@@ -324,6 +335,7 @@ ggsave(leaf_area_boxplot_species, file = "outputs/leaf_area_boxplot_species.png"
 (leaf_area_boxplot_soil <- ggplot(ratio, aes(soil, Leaf_area, color = soil)) +
    geom_boxplot() +
    theme_bw() +
+   scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
    ylab("Leaf area (cm2)\n") +                             
    xlab("\nSoil type")  +
    theme(axis.text = element_text(size = 12),
@@ -338,6 +350,7 @@ ggsave(leaf_area_boxplot_species, file = "outputs/leaf_area_boxplot_species.png"
 (leaf_area_boxplot_drought <- ggplot(ratio, aes(irrigation_level, Leaf_area, color = irrigation_level)) +
    geom_boxplot() +
    theme_bw() +
+   scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
    ylab("Leaf area (cm2)\n") +                             
    xlab("\nIrrigation level")  +
    theme(axis.text = element_text(size = 12),
@@ -366,6 +379,8 @@ biomass_data <- ratio %>%
 (total_biomass_drought_barplot <- ggplot(ratio, aes(irrigation_level, Dry_weight_total, fill = irrigation_level, color = irrigation_level)) +
     geom_bar(position = position_dodge(), stat = "identity") +
     theme_bw() +
+    scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ species, scales = "fixed") +
     ylab("Total plant biomass (g)\n") +                             
     xlab("\nIrrigation level")  +
@@ -418,6 +433,7 @@ biomass_data <- ratio %>%
 (biomass_drought_soil_barplot <- ggplot(biomass_data, aes(area, biomass, fill = irrigation_level)) +
     geom_bar(position = position_dodge(), stat = "identity") +
     facet_wrap(~ soil, scales = "fixed") +
+    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     theme_bw() +
     ylab("Biomass (g)\n") +                             
     xlab("\nPlant part")  +
