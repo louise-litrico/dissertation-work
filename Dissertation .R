@@ -42,9 +42,6 @@ field_capacity_data <- field_capacity_data %>%
           legend.position = "none"))
 
 # ggsave(volumetric_boxplot, file = "outputs/volumetric_boxplot.png", width = 12, height = 7) 
-volumetric_model <- lm(volumetric_water_content ~ soil_type, data = field_capacity_data)
-summary(volumetric_model)
-anova(volumetric_model)
 
 # Data manip moisture ----
 # moisture probe measures need to be plotted against time to see the progression 
@@ -463,13 +460,17 @@ biomass_data <- ratio %>%
 # ggsave(biomass_species_soil_barplot, file = "outputs/biomass_species_soil_barplot.png", width = 12, height = 7)
 
 # Stats moisture and field capacity ----
-moisture_model1 <- lm(volumetric_percent ~ soil_type*irrigation_level*day, data = moisture)
-summary(moisture_model1)
-anova(moisture_model1)
+volumetric_model <- lm(volumetric_water_content ~ soil_type , data = field_capacity_data)
+summary(volumetric_model)
+anova(volumetric_model)
+plot(volumetric_model)
 
 moisture_model <- lm(volumetric_percent ~ soil_type*day + irrigation_level, data = moisture)
 summary(moisture_model)
 anova(moisture_model)
+plot(moisture_model)
+moisture_resids <- resid(moisture_model)
+shapiro.test(moisture_resids)  # good since p>0.05
 
 # Stats ratio ----
 ratio_model1 <- lm(root_shoot ~ irrigation_level*species*soil, data = ratio)
@@ -613,6 +614,16 @@ Anova(ancova_model2, type="III")
 # posthoc test
 postHocs2 <- glht(ancova_model2, linfct = mcp(species = "Tukey"))
 summary(postHocs2)
+
+# For shoot biomass 
+leveneTest(log(Dry_weight_root) ~ species, data = ratio)
+# p-value > 0.05 so variance is equal 
+# then actually fitting the model
+ancova_model4 <- aov(log(Dry_weight_root) ~ species + irrigation_level, data = ratio)
+Anova(ancova_model4, type="III") 
+# posthoc test
+postHocs4 <- glht(ancova_model4, linfct = mcp(species = "Tukey"))
+summary(postHocs4)
 
 # For leaf area
 leveneTest(log(Leaf_area) ~ species, data = ratio)
