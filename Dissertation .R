@@ -73,6 +73,24 @@ moisture <- moisture %>%
   filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
 
 # Graphs moisture ----
+# Graph irrigation treatments 
+(irrigation_graph <- ggplot(moisture) +
+   geom_point(aes(day, irrigation, color = irrigation_level)) +
+   geom_line(aes(day, irrigation, color = irrigation_level)) +
+   theme_bw() +
+   xlab("\nTime (days since start of experiment)") +
+   ylab("Volume of water (ml)\n") +
+   theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+         axis.text.y = element_text(size = 10),
+         axis.title = element_text(size = 12, face = "plain"),                        
+         panel.grid = element_blank(),  
+         plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+         legend.text = element_text(size = 10, face = "italic"),  
+         legend.title = element_blank(),  # Removing the legend title 
+         legend.position = "right")) 
+
+# ggsave(irrigation_graph, file = "outputs/irrigation_graph.png", width = 12, height = 7) 
+
 # Boxplot mean moisture per irrigation treatment 
 (moisture_boxplot <- ggplot(moisture, aes(irrigation_level, mean_moisture)) +
    geom_boxplot(aes(color = irrigation_level)) +
@@ -490,14 +508,6 @@ ratio_model5 <- lm(root_shoot ~ species, data = ratio)
 summary(ratio_model5)
 anova(ratio_model5)
 plot(ratio_model5)
-
-AIC(ratio_model, ratio_model2, ratio_model3)  # can I use AIC for lm???
-
-# Verification of assumptions
-ratio_resids <- resid(ratio_model2)
-shapiro.test(ratio_resids)
-bartlett.test(root_shoot ~ irrigation_level*species + soil, data = ratio)  # doesn't work with interaction terms? 
-fligner.test(root_shoot ~ irrigation_level*species + soil, data = ratio) 
 
 # Stats biomass ----
 total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
