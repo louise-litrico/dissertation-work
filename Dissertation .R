@@ -23,7 +23,7 @@ moisture <- read_excel("moisture.xlsx")
 field_capacity_data <- field_capacity_data %>% 
   mutate(soil_type = as_factor(soil_type), pot_number = as_factor(pot_number)) %>% 
   mutate(water_content_gr = total_fresh-total_dry) %>%  # creating a new column for amount of water in soil
-  mutate(volumetric_water_content = water_content_gr/873.18)  # creating volumetric water content column in gr/cm3 
+  mutate(volumetric_water_content = water_content_gr/183,058)  # creating volumetric water content column in gr/cm3 
   # mutate(moisture_content = ((total_fresh/total_dry)-1))  # new column with soil moisture content
 # should I add *100 or not??? 
 
@@ -149,12 +149,12 @@ anova(moisture_model)
 # Graph of VWC % across time
 (vwc_time_series <- ggplot(moisture, aes(day, volumetric_percent, color = irrigation_level, fill = irrigation_level)) +
     geom_point() +
-    geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
+    # geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
+    geom_line() +
     theme_bw() +
     scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ soil_type, scales = "fixed") +
-    scale_y_continuous(limits = c(0, 300)) +
     ylab("Volumetric water content (% of VWC at field capacity)\n") +                             
     xlab("\nTime (days since start of experiment)") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
