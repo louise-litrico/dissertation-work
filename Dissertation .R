@@ -123,7 +123,7 @@ anova(moisture_model)
     theme_bw() +
     scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
-    ylab("Mean volumetric water content content (%)\n") +                             
+    ylab("Mean volumetric water content (%)\n") +                             
     xlab("\nDays since start of experiment") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
