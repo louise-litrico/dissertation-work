@@ -11,6 +11,7 @@ library(hrbrthemes)
 library(car)
 library(multcomp)
 library(RColorBrewer)
+library(gvlma)
 
 # Data sets ----
 ratio <- read_excel("root-shoot.xls")
@@ -44,8 +45,6 @@ field_capacity_data <- field_capacity_data %>%
 # ggsave(volumetric_boxplot, file = "outputs/volumetric_boxplot.png", width = 12, height = 7) 
 
 # Data manip moisture ----
-# moisture probe measures need to be plotted against time to see the progression 
-# before relating them to the soil moisture content 
 moisture <- moisture %>% 
   mutate(soil_type = as_factor(soil_type), pot = as_factor(pot)) %>% 
   tidyr::separate(date, c("year", "month", "day"), sep = "-", remove = FALSE) %>% 
@@ -139,13 +138,12 @@ anova(moisture_model)
 # Graph of VWC % across time
 (vwc_time_series <- ggplot(moisture, aes(day, mean_moisture, color = irrigation_level, fill = irrigation_level)) +
     geom_point() +
-    # geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     geom_line() +
     theme_bw() +
     scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ soil_type, scales = "fixed") +
-    ylab("Volumetric water content (%)\n") +                             
+    ylab("Mean volumetric water content (%)\n") +                             
     xlab("\nTime (days since start of experiment)") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
@@ -165,7 +163,8 @@ ratio <- ratio %>%
   mutate(species = as.factor(species), irrigation_level = as.factor(irrigation_level), soil = as.factor(soil)) %>% 
   filter(!root_shoot > 2.5, !Leaf_area > 5) %>%   # take out the outliers
   mutate(biomass_log = log(Dry_weight_total), root_shoot_log = log(root_shoot)) %>% 
-  mutate(leaf_area_ratio = Leaf_area/Dry_weight_total)
+  mutate(leaf_area_ratio = Leaf_area/Dry_weight_total) %>% 
+  mutate(count = c(1:96))  # to help with checking which observation doesn't fit assumptions 
   # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
 # Graphs root/shoot ----
@@ -467,59 +466,39 @@ biomass_data <- ratio %>%
 
 # ggsave(biomass_species_soil_barplot, file = "outputs/biomass_species_soil_barplot.png", width = 12, height = 7)
 
-# Stats moisture and field capacity ----
+# Stats VWC per soil type ----
 volumetric_model <- lm(volumetric_water_content ~ soil_type , data = field_capacity_data)
 summary(volumetric_model)
 anova(volumetric_model)
 plot(volumetric_model)
 
-moisture_model <- lm(volumetric_percent ~ soil_type*day + irrigation_level, data = moisture)
-summary(moisture_model)
-anova(moisture_model)
-plot(moisture_model)
-moisture_resids <- resid(moisture_model)
-shapiro.test(moisture_resids)  # good since p>0.05
-
 # Stats ratio ----
-ratio_model1 <- lm(root_shoot ~ irrigation_level*species*soil, data = ratio)
-summary(ratio_model)
-anova(ratio_model)
-plot(ratio_model)
-
-ratio_model <- lm(root_shoot ~ irrigation_level, data = ratio)
-summary(ratio_model)
-plot(ratio_model)
-
-ratio_model2 <- lm(root_shoot ~ soil, data = ratio)
-summary(ratio_model2)
-plot(ratio_model2)
-
-ratio_model5 <- lm(root_shoot ~ species, data = ratio)
-summary(ratio_model5)
-anova(ratio_model5)
-plot(ratio_model5)
+ratio_ratio <- ratio %>% filter(!count %in% c(67,90))  # taking out outliers
+ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil, data = ratio_ratio)
+summary(ratio_model1)
+anova(ratio_model1)
+plot(ratio_model1)
+summary(gvlma(ratio_model1))
 
 # Stats biomass ----
 total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
 summary(total_biomass_model)
 anova(total_biomass_model)
 plot(total_biomass_model)
+summary(gvlma(total_biomass_model))
 
 # Stats leaf area ----
-leaf_area_model <- lm(Leaf_area ~ species, data = ratio)
+ratio_leaf_area <- ratio %>%  filter(!count %in% c(84,53))  # taking out outliers
+leaf_area_model <- lm(Leaf_area ~ species, data = ratio_leaf_area)
 summary(leaf_area_model)
 anova(leaf_area_model)
 plot(leaf_area_model)
+summary(gvlma(leaf_area_model))
 
 leaf_area_ratio_model <- lm(leaf_area_ratio ~ species, data = ratio)
 summary(leaf_area_ratio_model)
 anova(leaf_area_ratio_model)
 plot(leaf_area_ratio_model)
-
-# Verification of assumptions # 
-leaf_resids <- resid(leaf_area_model)
-shapiro.test(leaf_resids)
-bartlett.test(Leaf_area ~ irrigation_level*soil*species, data = ratio)  # doesn't work with interaction terms? 
 
 # To see which drought level drives the significant results #
 ratio_aov <- aov(root_shoot ~ irrigation_level*soil*species, data = ratio)
