@@ -50,9 +50,9 @@ moisture <- moisture %>%
   mutate(soil_type = as_factor(soil_type), pot = as_factor(pot)) %>% 
   tidyr::separate(date, c("year", "month", "day"), sep = "-", remove = FALSE) %>% 
   dplyr::select(-year,-month) %>% 
-  mutate(day = case_when(day == "06" ~ 1, day == "09" ~ 3, day == "11" ~ 5, 
-                         day == "13" ~ 8, day == "16" ~ 10, day == "18" ~ 12, 
-                         day == "20" ~ 15, day == "23" ~ 18)) %>% 
+  mutate(day = case_when(day == "04" ~ 3, day == "06" ~ 5, day == "09" ~ 8, day == "11" ~ 10, 
+                         day == "13" ~ 12, day == "16" ~ 15, day == "18" ~ 17, 
+                         day == "20" ~ 19, day == "23" ~ 22)) %>% 
   mutate(irrigation_level = case_when(pot == 1 ~ "50",  # used to be drought_level but didn't make sense
                                    pot == 2 ~ "75",
                                    pot == 3 ~ "100",
@@ -60,16 +60,6 @@ moisture <- moisture %>%
                                    pot == 5 ~ "75",
                                    pot == 6 ~ "100")) %>% 
   mutate(irrigation_level = as_factor(irrigation_level)) %>% 
-  mutate(volumetric_water_content = c(field_capacity_data$volumetric_water_content*100,
-                           field_capacity_data$volumetric_water_content*100,
-                           field_capacity_data$volumetric_water_content*100,
-                           field_capacity_data$volumetric_water_content*100,
-                           field_capacity_data$volumetric_water_content*100,
-                           field_capacity_data$volumetric_water_content*100,
-                           field_capacity_data$volumetric_water_content*100,
-                           field_capacity_data$volumetric_water_content*100)) %>% 
-  mutate(volumetric_percent = (mean_moisture*100)/volumetric_water_content) %>% 
-  mutate(volumetric_percent_sd = (sd*100)/volumetric_water_content) %>% 
   filter(pot %in% c(1,2,3))  # only selecting pots that have plant data
 
 # Graphs moisture ----
@@ -147,7 +137,7 @@ anova(moisture_model)
 # ggsave(moisture_time_series, file = "outputs/moisture_time_series.png", width = 12, height = 7) 
 
 # Graph of VWC % across time
-(vwc_time_series <- ggplot(moisture, aes(day, volumetric_percent, color = irrigation_level, fill = irrigation_level)) +
+(vwc_time_series <- ggplot(moisture, aes(day, mean_moisture, color = irrigation_level, fill = irrigation_level)) +
     geom_point() +
     # geom_smooth(formula = y ~ x, method = "lm") + # add se = FALSE to remove error shading
     geom_line() +
@@ -155,7 +145,7 @@ anova(moisture_model)
     scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ soil_type, scales = "fixed") +
-    ylab("Volumetric water content (% of VWC at field capacity)\n") +                             
+    ylab("Volumetric water content (%)\n") +                             
     xlab("\nTime (days since start of experiment)") +
     theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 10),
@@ -644,3 +634,20 @@ Anova(ancova_model3, type="III")
 # posthoc test 
 postHocs3 <- glht(ancova_model3, linfct = mcp(species = "Tukey"))
 summary(postHocs3)
+
+# For mean moisture 
+# Assumptions with chi-squared test and Levene's test
+explanatory_table = table(moisture$day, moisture$soil_type)
+print(explanatory_table)
+print(chisq.test(explanatory_table))
+# p-value > 0.05 so covariates are independent 
+leveneTest(mean_moisture ~ irrigation_level, data = moisture)
+# p-value > 0.05 so variance is equal 
+# then actually fitting the model
+ancova_model <- aov(mean_moisture ~ irrigation_level + day + soil_type, data = moisture)
+Anova(ancova_model, type="III") 
+# posthoc test 
+postHocs <- glht(ancova_model, linfct = mcp(soil_type = "Tukey"))
+summary(postHocs)
+postHocs1 <- glht(ancova_model, linfct = mcp(irrigation_level = "Tukey"))
+summary(postHocs1)
