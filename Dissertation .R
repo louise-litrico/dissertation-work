@@ -290,11 +290,13 @@ slopes2 <- c(as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species ==
 coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>% 
   rename(intercept = slopes, slope = slopes2, species = c..Basil....Dill....Parlsey..)
 
-(root_shoot_graph <- ggplot(ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
-    geom_point(aes(color = species)) +
-    stat_smooth(aes(color = species), se = FALSE, method = "lm") +
+(root_shoot_soil_graph <- ggplot(ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
+    geom_point(aes(color = soil)) +
+    stat_smooth(aes(color = soil), se = FALSE, method = "lm") +
+    scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
     geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black", size = 1) +
     theme_bw() +
+    facet_wrap(~ species, scales = "fixed") +
     ylab("Plant root biomass (g)\n") +                             
     xlab("\nPlant shoot biomass (g)") +
     theme(axis.text = element_text(size = 12),
@@ -303,7 +305,23 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
 
-# ggsave(root_shoot_graph, file = "outputs/root_shoot_graph.png", width = 12, height = 7)
+ggsave(root_shoot_soil_graph, file = "outputs/root_shoot_soil_graph.png", width = 12, height = 7)
+
+(root_shoot_irrigation_graph <- ggplot(ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
+    geom_point(aes(color = irrigation_level)) +
+    stat_smooth(aes(color = irrigation_level), se = FALSE, method = "lm") +
+    scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black", size = 1) +
+    theme_bw() +
+    facet_wrap(~ species, scales = "fixed") +
+    ylab("Plant root biomass (g)\n") +                             
+    xlab("\nPlant shoot biomass (g)") +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
+ggsave(root_shoot_irrigation_graph, file = "outputs/root_shoot_irrigation_graph.png", width = 12, height = 7)
 
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
@@ -329,6 +347,7 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
    theme_bw() +
    ylab("Leaf area (cm2)\n") +                             
    xlab("\nSpecies")  +
+   facet_wrap(~ soil, scales = "fixed") +
    theme(axis.text = element_text(size = 12),
          axis.title = element_text(size = 14, face = "plain"),                     
          panel.grid = element_blank(),       
@@ -466,7 +485,7 @@ biomass_data <- ratio %>%
 
 # ggsave(biomass_species_soil_barplot, file = "outputs/biomass_species_soil_barplot.png", width = 12, height = 7)
 
-# Stats VWC per soil type ----
+# Stats VWC ----
 volumetric_model <- lm(volumetric_water_content ~ soil_type , data = field_capacity_data)
 summary(volumetric_model)
 anova(volumetric_model)
@@ -500,121 +519,8 @@ summary(leaf_area_ratio_model)
 anova(leaf_area_ratio_model)
 plot(leaf_area_ratio_model)
 
-# To see which drought level drives the significant results #
-ratio_aov <- aov(root_shoot ~ irrigation_level*soil*species, data = ratio)
-TukeyHSD(ratio_aov)
-
-# Generalized linear models ----
-# check family 
-hist(ratio$root_shoot)
-
-generalized_ratio <- glm(root_shoot ~ irrigation_level*soil*species, family = gaussian, data = ratio)
-summary(generalized_ratio)
-
-generalized_ratio2 <- glm(root_shoot ~ irrigation_level*soil + species, family = gaussian, data = ratio)
-summary(generalized_ratio2)
-
-generalized_ratio3 <- glm(root_shoot ~ irrigation_level + soil + species, family = gaussian, data = ratio)
-summary(generalized_ratio3)
-
-AIC(generalized_ratio,generalized_ratio2, generalized_ratio3)
-# weird because I get different results than for the ANOVA...?
-
-# NMDS + permanova ----
-(ratio.fit <- adonis(root_shoot ~ irrigation_level*soil*species, ratio, 
-                      permutations = 500, method = "bray"))  # weird because shows effect of irrigation_level + species + soil which is different from ANOVA results
-
-(leaf_area.fit <- adonis(Leaf_area ~ irrigation_level*soil*species, ratio, 
-                     permutations = 500, method = "bray"))  # only species have significant difference which is same result as ANOVA
-
-# pairwise.adonis(invert[,5:18], invert$Site)  # post hoc test 
-ratio.NMDS <- metaMDS(ratio$root_shoot, distance = "bray", k = 2, trymax=100)  # works but stress nearly 0 so may have insufficient data 
-# par(mfrow=c(1,1))
-# ratio.NMDS$stress
-
-group <- as.character(ratio$irrigation_level)
-colours <- as.character(ratio$irrigation_level)
-
-as.character(ratio$irrigation_level) %>% 
-  replace(colours=="100", "#ddffa2") %>% 
-  replace(colours=="75", "#a9c3e1") %>% 
-  replace(colours=="50", "#ff4f4f") -> colours
-
-# create the NMDS plot #
-
-par(mfrow=c(1,1))
-ordiplot(ratio.NMDS, type = "n", cex.axis = 2, cex.lab=2)
-
-for(i in unique(group)) {
-  ordihull(ratio.NMDS$points[grep(i, group),], draw="polygon",
-           groups = group[group == i],col = colours[grep(i,group)],label=F) 
-  }
-
-orditorp(ratio.NMDS, display = "species", col = "red", air = 0.01)
-orditorp(ratio.NMDS, display = "sites", label=F, air = 0.01, cex = 1.25)
-legend('bottomright', legend=c("0m","6m","12m","18m"), col=unique(colours), 
-       title = "Distance from road", bty = "n", pch = 16)
-legend('bottomleft', legend="stress = 0.042", bty = "n")
-
-# MANOVA ----
-(manova1 <- manova(cbind(root_shoot, Leaf_area) ~ irrigation_level + soil + species, ratio))
-summary(manova1)
-summary.aov(manova1)
-
-plotmeans(ratio$root_shoot ~ ratio$irrigation_level)
-plotmeans(ratio$root_shoot ~ ratio$species)
-plotmeans(ratio$root_shoot ~ ratio$soil)
-
-# ANCOVA ----
-# First test assumptions with chi-squared test and Levene's test
-explanatory_table = table(ratio$irrigation_level, ratio$species)
-print(explanatory_table)
-print(chisq.test(explanatory_table))
-# p-value > 0.05 so variables are independent 
-
-# For R/S ratio 
-leveneTest(log(root_shoot) ~ species, data = ratio)
-# p-value > 0.05 so variance is equal 
-# then actually fitting the model
-ancova_model <- aov(log(root_shoot) ~ species + irrigation_level, data = ratio)
-Anova(ancova_model, type="III") 
-# posthoc test 
-postHocs <- glht(ancova_model, linfct = mcp(species = "Tukey"))
-summary(postHocs)
-postHocs1 <- glht(ancova_model, linfct = mcp(irrigation_level = "Tukey"))
-summary(postHocs1)
-
-# For shoot biomass 
-leveneTest(log(Dry_weight_shoot) ~ species, data = ratio)
-# p-value > 0.05 so variance is equal 
-# then actually fitting the model
-ancova_model2 <- aov(log(Dry_weight_shoot) ~ species + irrigation_level, data = ratio)
-Anova(ancova_model2, type="III") 
-# posthoc test
-postHocs2 <- glht(ancova_model2, linfct = mcp(species = "Tukey"))
-summary(postHocs2)
-
-# For shoot biomass 
-leveneTest(log(Dry_weight_root) ~ species, data = ratio)
-# p-value > 0.05 so variance is equal 
-# then actually fitting the model
-ancova_model4 <- aov(log(Dry_weight_root) ~ species + irrigation_level, data = ratio)
-Anova(ancova_model4, type="III") 
-# posthoc test
-postHocs4 <- glht(ancova_model4, linfct = mcp(species = "Tukey"))
-summary(postHocs4)
-
-# For leaf area
-leveneTest(log(Leaf_area) ~ species, data = ratio)
-# p-value > 0.05 so variance is equal 
-# then actually fitting the model
-ancova_model3 <- aov(log(Leaf_area) ~ species + irrigation_level, data = ratio)
-Anova(ancova_model3, type="III") 
-# posthoc test 
-postHocs3 <- glht(ancova_model3, linfct = mcp(species = "Tukey"))
-summary(postHocs3)
-
-# For mean moisture 
+# Stats moisture ----
+# ANCOVA
 # Assumptions with chi-squared test and Levene's test
 explanatory_table = table(moisture$day, moisture$soil_type)
 print(explanatory_table)
