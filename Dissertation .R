@@ -324,7 +324,7 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
 # ggsave(biomass_leaf_ratio_graph, file = "outputs/biomass_leaf_ratio_graph.png", width = 12, height = 7)
 
 # Boxplot leaf area + species
-(leaf_area_boxplot_species <- ggplot(ratio, aes(species, Leaf_area, color = species)) +
+(leaf_area_boxplot_species <- ggplot(ratio_leaf_area, aes(species, Leaf_area, color = species)) +
    geom_boxplot() +
    theme_bw() +
    ylab("Leaf area (cm2)\n") +                             
@@ -335,7 +335,7 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
          legend.position = "none"))
 
-ggsave(leaf_area_boxplot_species, file = "outputs/leaf_area_boxplot_species.png", width = 12, height = 7)
+# ggsave(leaf_area_boxplot_species, file = "outputs/leaf_area_boxplot_species.png", width = 12, height = 7)
 
 # Boxplot leaf area + soil 
 (leaf_area_boxplot_soil <- ggplot(ratio, aes(soil, Leaf_area, color = soil)) +
@@ -489,7 +489,7 @@ summary(gvlma(total_biomass_model))
 
 # Stats leaf area ----
 ratio_leaf_area <- ratio %>%  filter(!count %in% c(84,53))  # taking out outliers
-leaf_area_model <- lm(Leaf_area ~ species, data = ratio_leaf_area)
+leaf_area_model <- lm(Leaf_area ~ species*soil + irrigation_level, data = ratio_leaf_area)
 summary(leaf_area_model)
 anova(leaf_area_model)
 plot(leaf_area_model)
