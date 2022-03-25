@@ -188,8 +188,9 @@ ratio <- ratio %>%
          legend.position = "right"))
 
 # ggsave(biomass_root_shoot_graph, file = "outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
+
 # log graph colored by soil 
-(biomass_root_shoot2_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
+(biomass_root_shoot2_graph <- ggplot(ratio_ratio, aes(biomass_log, root_shoot_log)) +
     geom_point(aes(color = soil)) +
     geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
     facet_wrap(~ irrigation_level, scales = "fixed") +
@@ -236,7 +237,7 @@ ratio <- ratio %>%
 # ggsave(ratio_soil_boxplot, file = "outputs/ratio_soil_boxplot.png", width = 12, height = 7)
 
 # Boxplot root/shoot and species
-(ratio_species_boxplot <- ggplot(ratio, aes(species, root_shoot)) +
+(ratio_species_boxplot <- ggplot(ratio_ratio, aes(species, root_shoot)) +
     geom_boxplot(aes(color = species)) +
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
@@ -290,7 +291,7 @@ slopes2 <- c(as.numeric(lm(Dry_weight_root ~ Dry_weight_shoot, ratio, species ==
 coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>% 
   rename(intercept = slopes, slope = slopes2, species = c..Basil....Dill....Parlsey..)
 
-(root_shoot_soil_graph <- ggplot(ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
+(root_shoot_soil_graph <- ggplot(ratio_ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
     geom_point(aes(color = soil)) +
     stat_smooth(aes(color = soil), se = FALSE, method = "lm") +
     scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
@@ -305,9 +306,9 @@ coefficients <- data.frame(slopes, slopes2, c("Basil","Dill","Parlsey")) %>%
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
 
-ggsave(root_shoot_soil_graph, file = "outputs/root_shoot_soil_graph.png", width = 12, height = 7)
+# ggsave(root_shoot_soil_graph, file = "outputs/root_shoot_soil_graph.png", width = 12, height = 7)
 
-(root_shoot_irrigation_graph <- ggplot(ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
+(root_shoot_irrigation_graph <- ggplot(ratio_ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
     geom_point(aes(color = irrigation_level)) +
     stat_smooth(aes(color = irrigation_level), se = FALSE, method = "lm") +
     scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
@@ -321,11 +322,11 @@ ggsave(root_shoot_soil_graph, file = "outputs/root_shoot_soil_graph.png", width 
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
-ggsave(root_shoot_irrigation_graph, file = "outputs/root_shoot_irrigation_graph.png", width = 12, height = 7)
+# ggsave(root_shoot_irrigation_graph, file = "outputs/root_shoot_irrigation_graph.png", width = 12, height = 7)
 
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
-(biomass_leaf_ratio_graph <- ggplot(ratio, aes(biomass_log, log(leaf_area_ratio))) +
+(biomass_leaf_ratio_graph <- ggplot(ratio_leaf_area, aes(biomass_log, log(leaf_area_ratio))) +
     geom_point(aes(color = soil)) +
     geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
     theme_bw() +
