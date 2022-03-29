@@ -12,7 +12,7 @@ library(multcomp)
 library(RColorBrewer)
 library(gvlma)
 
-# Datasets ----
+# Data sets ----
 ratio <- read_excel("root-shoot.xls")
 field_capacity_data <- read_excel("Field_capacity_diss.xlsx")
 moisture <- read_excel("moisture.xlsx")
@@ -108,8 +108,8 @@ ratio <- ratio %>%
   filter(!root_shoot > 2.5, !Leaf_area > 5) %>% 
   mutate(biomass_log = log(Dry_weight_total), root_shoot_log = log(root_shoot)) %>% 
   mutate(leaf_area_ratio = Leaf_area/Dry_weight_total) %>% 
-  mutate(count = c(1:96))
-
+  mutate(count = c(1:96)) 
+ 
 # Stats ratio ----
 ratio_ratio <- ratio %>% filter(!count %in% c(67,90))  # taking out outliers
 ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil, data = ratio_ratio)
@@ -118,6 +118,24 @@ anova(ratio_model1)
 plot(ratio_model1)
 summary(gvlma(ratio_model1))
 
+explanatory_model = aov(Dry_weight_shoot ~ irrigation_level, data = ratio_ratio)
+summary(explanatory_model)
+explanatory_model = aov(Dry_weight_shoot ~ soil, data = ratio_ratio)
+summary(explanatory_model)
+# p-value > 0.05 so covariates are independent 
+leveneTest(Dry_weight_root ~ irrigation_level, data = ratio_ratio)
+leveneTest(Dry_weight_root ~ soil, data = ratio_ratio)
+# p-value > 0.05 so variance is equal 
+# then actually fitting the model
+ancova_model <- aov(Dry_weight_root ~ irrigation_level + Dry_weight_shoot, data = ratio_ratio)
+Anova(ancova_model, type="III") 
+ancova_model2 <- aov(Dry_weight_root ~ soil + Dry_weight_shoot, data = ratio_ratio)
+Anova(ancova_model2, type="III") 
+# posthoc test 
+postHocs <- glht(ancova_model, linfct = mcp(soil_type = "Tukey"))
+summary(postHocs)
+postHocs1 <- glht(ancova_model, linfct = mcp(irrigation_level = "Tukey"))
+summary(postHocs1)
 # Stats leaf area ----
 ratio_leaf_area <- ratio %>%  filter(!count %in% c(84,53))  # taking out outliers
 leaf_area_model <- lm(Leaf_area ~ species*soil + irrigation_level, data = ratio_leaf_area)
@@ -139,7 +157,7 @@ plot(leaf_area_ratio_model)
 # Log graph colored by soil 
 (biomass_root_shoot2_graph <- ggplot(ratio_ratio, aes(biomass_log, root_shoot_log)) +
     geom_point(aes(color = soil)) +
-    geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+    stat_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
     facet_wrap(~ irrigation_level, scales = "fixed") +
     theme_bw() +
     scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
@@ -164,11 +182,9 @@ plot(leaf_area_ratio_model)
           legend.position = "none"))
 
 # Root against shoot for soils 
-(root_shoot_soil_graph <- ggplot(ratio_ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
-    geom_point(aes(color = soil)) +
-    stat_smooth(aes(color = soil), se = FALSE, method = "lm") +
+(root_shoot_soil_graph <- ggscatter(ratio_ratio, x = "Dry_weight_shoot", y = "Dry_weight_root", color = "soil", add = "reg.line") +
+    stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = soil)) +
     scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
-    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black", size = 1) +
     theme_bw() +
     facet_wrap(~ species, scales = "fixed") +
     ylab("Plant root biomass (g)\n") +                             
@@ -180,20 +196,18 @@ plot(leaf_area_ratio_model)
           legend.position = "right"))
 
 # Roots against shoots for irrigation levels 
-(root_shoot_irrigation_graph <- ggplot(ratio_ratio, aes(Dry_weight_shoot, Dry_weight_root)) +
-    geom_point(aes(color = irrigation_level)) +
-    stat_smooth(aes(color = irrigation_level), se = FALSE, method = "lm") +
-    scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
-    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black", size = 1) +
-    theme_bw() +
-    facet_wrap(~ species, scales = "fixed") +
-    ylab("Plant root biomass (g)\n") +                             
-    xlab("\nPlant shoot biomass (g)") +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "right"))
+(root_shoot_irrigation_graph <- ggscatter(ratio_ratio, x = "Dry_weight_shoot", y = "Dry_weight_root", color = "irrigation_level", add = "reg.line") +
+  stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = irrigation_level)) +
+  scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+  theme_bw() +
+  facet_wrap(~ species, scales = "fixed") +
+  ylab("Plant root biomass (g)\n") +                             
+  xlab("\nPlant shoot biomass (g)") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14, face = "plain"),                     
+        panel.grid = element_blank(),       
+        plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+        legend.position = "right"))
 
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
