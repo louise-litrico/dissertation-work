@@ -154,7 +154,16 @@ plot(leaf_area_ratio_model)
 # Graphs ratio ----
 # Heatmap R/S + soil + drought
 (root_shoot_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = root_shoot)) +
-   geom_tile())
+   geom_tile() +
+   theme_bw() +
+   ylab("Irrigation level\n") +                             
+   xlab("\nSoil Type") +
+   labs(fill='Root : Shoot ratio') +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "right"))
 
 # Log graph colored by soil 
 (biomass_root_shoot2_graph <- ggplot(ratio_ratio, aes(biomass_log, root_shoot_log)) +
@@ -256,8 +265,17 @@ summary(gvlma(total_biomass_model))
 
 # Graph biomass ----
 # Heatmap biomass + soil + drought
-(biomass_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = Dry_weight_total)) +
-   geom_tile())
+(biomass_heatmap <- ggplot(ratio_ratio, aes(soil, irrigation_level, fill = Dry_weight_total)) + 
+   geom_tile() +
+   theme_bw() +
+   ylab("Irrigation level\n") +                             
+   xlab("\nSoil Type") +
+   labs(fill='Total biomass (g)') +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "right"))
 
 # Plot total biomass and soil types 
 (total_biomass_drought_barplot <- ggplot(ratio, aes(irrigation_level, Dry_weight_total, fill = irrigation_level, color = irrigation_level)) +
