@@ -102,13 +102,14 @@ summary(postHocs1)
 
 
 # Data manipulation ratio ----
-ratio <- ratio %>% 
+ratio_ratio <- ratio %>% 
   rename(root_shoot = "Root/Shoot", irrigation_level = Drought_level, soil = Soil_Type, species = Species) %>% 
   mutate(species = as.factor(species), irrigation_level = as.factor(irrigation_level), soil = as.factor(soil)) %>% 
   filter(!root_shoot > 2.5, !Leaf_area > 5) %>% 
   mutate(biomass_log = log(Dry_weight_total), root_shoot_log = log(root_shoot)) %>% 
   mutate(leaf_area_ratio = Leaf_area/Dry_weight_total) %>% 
-  mutate(count = c(1:96)) 
+  mutate(count = c(1:96)) %>% 
+  mutate(root_log = log(Dry_weight_root), shoot_log = (log(Dry_weight_shoot)))
  
 # Stats ratio ----
 ratio_ratio <- ratio %>% filter(!count %in% c(67,90))  # taking out outliers
@@ -123,13 +124,14 @@ summary(explanatory_model)
 explanatory_model = aov(Dry_weight_shoot ~ soil, data = ratio_ratio)
 summary(explanatory_model)
 # p-value > 0.05 so covariates are independent 
-leveneTest(Dry_weight_root ~ irrigation_level, data = ratio_ratio)
+leveneTest(Dry_weight_root ~ species, data = ratio_ratio)
 leveneTest(Dry_weight_root ~ soil, data = ratio_ratio)
+leveneTest(Dry_weight_root ~ irrigation_level, data = ratio_ratio)
 # p-value > 0.05 so variance is equal 
 # then actually fitting the model
-ancova_model <- aov(Dry_weight_root ~ irrigation_level + Dry_weight_shoot, data = ratio_ratio)
+ancova_model <- aov(Dry_weight_root ~ species + irrigation_level + Dry_weight_shoot, data = ratio_ratio)
 Anova(ancova_model, type="III") 
-ancova_model2 <- aov(Dry_weight_root ~ soil + Dry_weight_shoot, data = ratio_ratio)
+ancova_model2 <- aov(Dry_weight_root ~ species + soil + Dry_weight_shoot, data = ratio_ratio)
 Anova(ancova_model2, type="III") 
 # posthoc test 
 postHocs <- glht(ancova_model, linfct = mcp(soil_type = "Tukey"))
@@ -182,7 +184,7 @@ plot(leaf_area_ratio_model)
           legend.position = "none"))
 
 # Root against shoot for soils 
-(root_shoot_soil_graph <- ggscatter(ratio_ratio, x = "Dry_weight_shoot", y = "Dry_weight_root", color = "soil", add = "reg.line") +
+(root_shoot_soil_graph <- ggscatter(ratio_ratio, x = "shoot_log", y = "root_log", color = "soil", add = "reg.line") +
     stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = soil)) +
     scale_color_manual(values = c("#009E73", "#F0E442", "#0072B2")) +
     theme_bw() +
@@ -196,7 +198,7 @@ plot(leaf_area_ratio_model)
           legend.position = "right"))
 
 # Roots against shoots for irrigation levels 
-(root_shoot_irrigation_graph <- ggscatter(ratio_ratio, x = "Dry_weight_shoot", y = "Dry_weight_root", color = "irrigation_level", add = "reg.line") +
+(root_shoot_irrigation_graph <- ggscatter(ratio_ratio, x = "shoot_log", y = "root_log", color = "irrigation_level", add = "reg.line") +
   stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = irrigation_level)) +
   scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
   theme_bw() +
