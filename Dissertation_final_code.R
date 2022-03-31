@@ -3,31 +3,13 @@
 # Libraries ----
 library(tidyverse)
 library(readxl)
-library(scales)
-library(gplots)
-library(patchwork)
-library(hrbrthemes)
-library(car)
-library(multcomp)
-library(RColorBrewer)
 library(gvlma)
+library(ggpubr)
+library(car)
 
 # Data sets ----
 ratio <- read_excel("root-shoot.xls")
-field_capacity_data <- read_excel("Field_capacity_diss.xlsx")
 moisture <- read_excel("moisture.xlsx")
-
-# Data manipulation VWC ----
-field_capacity_data <- field_capacity_data %>% 
-  mutate(soil_type = as_factor(soil_type), pot_number = as_factor(pot_number)) %>% 
-  mutate(water_content_gr = total_fresh-total_dry) %>%  
-  mutate(volumetric_water_content = water_content_gr/183,058) 
-
-# Stats VWC ----
-volumetric_model <- lm(volumetric_water_content ~ soil_type , data = field_capacity_data)
-summary(volumetric_model)
-anova(volumetric_model)
-plot(volumetric_model)
 
 # Data manipulation moisture ----
 moisture <- moisture %>% 
@@ -56,7 +38,7 @@ print(chisq.test(explanatory_table))
 leveneTest(mean_moisture ~ irrigation_level, data = moisture)
 # p-value > 0.05 so variance is equal 
 # then actually fitting the model
-ancova_model <- aov(mean_moisture ~ irrigation_level + day + soil_type, data = moisture)
+ancova_model <- aov(mean_moisture ~ irrigation_level + soil_type + day, data = moisture)
 Anova(ancova_model, type="III") 
 # posthoc test 
 postHocs <- glht(ancova_model, linfct = mcp(soil_type = "Tukey"))
@@ -110,8 +92,7 @@ ratio <- ratio %>%
   mutate(root_log = log(Dry_weight_root), shoot_log = (log(Dry_weight_shoot)))
  
 # Stats ratio ----
-ratio2 <- ratio %>% filter(!count %in% c(67,90))  # taking out outliers
-ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil, data = ratio2)
+ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil + Dry_weight_total, data = ratio)
 summary(ratio_model1)
 anova(ratio_model1)
 plot(ratio_model1)
@@ -125,17 +106,11 @@ plot(ratio_model2)
 summary(gvlma(ratio_model2))
 
 # Stats leaf area ----
-ratio_leaf_area <- ratio %>%  filter(!count %in% c(84,53))  # taking out outliers
-leaf_area_model <- lm(Leaf_area ~ species*soil + irrigation_level, data = ratio_leaf_area)
+leaf_area_model <- lm(Leaf_area ~ species + Dry_weight_total + soil*irrigation_level, data = ratio)
 summary(leaf_area_model)
 anova(leaf_area_model)
 plot(leaf_area_model)
 summary(gvlma(leaf_area_model))
-
-leaf_area_ratio_model <- lm(leaf_area_ratio ~ species, data = ratio)
-summary(leaf_area_ratio_model)
-anova(leaf_area_ratio_model)
-plot(leaf_area_ratio_model)
 
 # Graphs ratio ----
 # Heatmap R/S + soil + drought
@@ -151,15 +126,15 @@ plot(leaf_area_ratio_model)
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
          legend.position = "right"))
 
-# Log graph colored by soil 
-(biomass_root_shoot2_graph <- ggplot(ratio, aes(biomass_log, root_shoot_log)) +
+# Root/shoot and biomass graph colored by soil 
+(biomass_root_shoot2_graph <- ggplot(ratio, aes(Dry_weight_total, root_shoot)) +
     geom_point(aes(color = soil)) +
-    stat_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+    stat_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ x') +
     facet_wrap(~ irrigation_level, scales = "fixed") +
     theme_bw() +
     scale_color_manual('Soil type', values = c("#009E73", "#F0E442", "#0072B2")) +
-    ylab("Log root/shoot ratio\n") +                             
-    xlab("\nLog total biomass")  +
+    ylab("Root : shoot ratio (g/g)\n") +                             
+    xlab("\nTotal biomass (g)")  +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
@@ -208,14 +183,14 @@ plot(leaf_area_ratio_model)
 
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
-(biomass_leaf_ratio_graph <- ggplot(ratio_leaf_area, aes(biomass_log, log(leaf_area_ratio))) +
+(biomass_leaf_ratio_graph <- ggplot(ratio, aes(Dry_weight_total, Leaf_area)) +
    geom_point(aes(color = soil)) +
-   geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+   geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ x') +
    theme_bw() +
    scale_color_manual('Soil type', values = c("#009E73", "#F0E442", "#0072B2")) +
    facet_wrap(~ irrigation_level, scales = "fixed") +
-   ylab("Log leaf area ratio\n") +                             
-   xlab("\nLog total biomass")  +
+   ylab("Leaf area (cm2)\n") +                             
+   xlab("\nTotal biomass (g)")  +
    theme(axis.text = element_text(size = 12),
          axis.title = element_text(size = 14, face = "plain"),                     
          panel.grid = element_blank(),       
@@ -223,24 +198,16 @@ plot(leaf_area_ratio_model)
          legend.position = "right"))
 
 # Boxplot leaf area + species
-(leaf_area_boxplot_species <- ggplot(ratio_leaf_area, aes(species, Leaf_area, color = species)) +
+(leaf_area_boxplot_species <- ggplot(ratio, aes(species, Leaf_area, color = species)) +
     geom_boxplot() +
     theme_bw() +
     ylab("Leaf area (cm2)\n") +                             
     xlab("\nSpecies")  +
-    facet_wrap(~ soil, scales = "fixed") +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14, face = "plain"),                     
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
-
-# Data manipulation biomass ----
-biomass_data <- ratio %>% 
-  select(irrigation_level, soil, species, Dry_weight_shoot, Dry_weight_root, Dry_weight_total) %>% 
-  gather(., characteristic, biomass, c(4:6)) %>% 
-  tidyr::separate(characteristic, c("moisture", "weight", "area"), sep = "_", remove = TRUE) %>% 
-  select(-moisture,-weight)
 
 # Stats biomass ----
 total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
