@@ -168,6 +168,32 @@ ratio <- ratio %>%
   # mutate(root_shoot = rescale(root_shoot, to = c(-1, 1)))  # to help with analysis 
 
 # Graphs root/shoot ----
+# Root fraction against total biomass 
+(root_fraction_graph <- ggplot(ratio, aes(log(Dry_weight_total), root_fraction, color = irrigation_level)) +
+   geom_point() +
+   geom_smooth(se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+   theme_bw() +
+   ylab("Root mass fraction\n") +                             
+   xlab("\nTotal biomass (g)") +
+   theme(axis.text = element_text(size = 12),
+         axis.title = element_text(size = 14, face = "plain"),                     
+         panel.grid = element_blank(),       
+         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+         legend.position = "right"))
+
+# Shoot fraction against total biomass 
+(shoot_fraction_graph <- ggplot(ratio, aes(log(Dry_weight_total), shoot_fraction, color = irrigation_level)) +
+    geom_point() +
+    geom_smooth(se = FALSE, method = "lm", formula = 'y ~ poly(x, 2)') +
+    theme_bw() +
+    ylab("Shoot mass fraction\n") +                             
+    xlab("\nTotal biomass (g)") +
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14, face = "plain"),                     
+          panel.grid = element_blank(),       
+          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
+          legend.position = "right"))
+
 # Heatmap R/S + soil + drought
 (root_shoot_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = root_shoot)) +
    geom_tile())
