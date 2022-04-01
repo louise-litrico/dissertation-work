@@ -6,6 +6,7 @@ library(readxl)
 library(gvlma)
 library(ggpubr)
 library(car)
+library(multcomp)
 
 # Data sets ----
 ratio <- read_excel("root-shoot.xls")

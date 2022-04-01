@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ANCOVA carried out to test the effect of time, soil type and irrigation level on the volumetric water content of the soil throughout the experiment. 
 
-```{r moisture ancova}
+```r 
 # ANCOVA
 # Assumptions with chi-squared test and Levene's test
 explanatory_table = table(moisture$day, moisture$soil_type)
@@ -36,7 +36,7 @@ summary(postHocs1)
 
 Linear model carried out to test the effect of species, soil type and irrigation level on the root : shoot ratio values while controlling for total biomass of the individuals. 
 
-```{r ratio model}
+```r
 ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil + Dry_weight_total, data = ratio)
 summary(ratio_model1)
 anova(ratio_model1)
@@ -46,7 +46,7 @@ summary(gvlma(ratio_model1))
 
 Linear model carried out to test the effect of dry shoot weight, irrigation level, soil type and species, on the dry root weight of the plants. 
 
-```{r ratio model}
+```r
 ratio3 <- ratio %>% filter(!count %in% c(50,67,87,90))  # taking out outliers
 ratio_model2 <- lm(log(Dry_weight_root) ~ log(Dry_weight_shoot) + irrigation_level*soil + species, data = ratio3)
 summary(ratio_model2)
@@ -59,7 +59,7 @@ summary(gvlma(ratio_model2))
 
 Linear model carried out to test the effect of species, soil type and irrigation level on the leaf area values while controlling for total biomass of the individuals. 
 
-```{r ratio model}
+```r 
 leaf_area_model <- lm(Leaf_area ~ species + Dry_weight_total + soil*irrigation_level, data = ratio)
 summary(leaf_area_model)
 anova(leaf_area_model)
@@ -71,7 +71,7 @@ summary(gvlma(leaf_area_model))
 
 Linear model carried out to test the effect of species, soil type and irrigation level on the total biomass of the individuals. 
 
-```{r ratio model}
+```r
 total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
 summary(total_biomass_model)
 anova(total_biomass_model)
