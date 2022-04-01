@@ -19,7 +19,7 @@ moisture <- moisture %>%
   mutate(day = case_when(day == "04" ~ 3, day == "06" ~ 5, day == "09" ~ 8, day == "11" ~ 10, 
                          day == "13" ~ 12, day == "16" ~ 15, day == "18" ~ 17, 
                          day == "20" ~ 19, day == "23" ~ 22)) %>% 
-  mutate(irrigation_level = case_when(pot == 1 ~ "50",  # used to be drought_level but didn't make sense
+  mutate(irrigation_level = case_when(pot == 1 ~ "50",
                                       pot == 2 ~ "75",
                                       pot == 3 ~ "100",
                                       pot == 4 ~ "50",

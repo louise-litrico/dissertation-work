@@ -1,0 +1,80 @@
+---
+title: "Dissertation code"
+author: "Louise Litrico S1814797"
+date: "4/1/2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Moisture analysis
+
+ANCOVA carried out to test the effect of time, soil type and irrigation level on the volumetric water content of the soil throughout the experiment. 
+
+```{r moisture ancova}
+# ANCOVA
+# Assumptions with chi-squared test and Levene's test
+explanatory_table = table(moisture$day, moisture$soil_type)
+print(explanatory_table)
+print(chisq.test(explanatory_table))
+# p-value > 0.05 so covariates are independent 
+leveneTest(mean_moisture ~ irrigation_level, data = moisture)
+# p-value > 0.05 so variance is equal 
+# then actually fitting the model
+ancova_model <- aov(mean_moisture ~ irrigation_level + soil_type + day, data = moisture)
+Anova(ancova_model, type="III") 
+# posthoc test 
+postHocs <- glht(ancova_model, linfct = mcp(soil_type = "Tukey"))
+summary(postHocs)
+postHocs1 <- glht(ancova_model, linfct = mcp(irrigation_level = "Tukey"))
+summary(postHocs1)
+```
+
+## Root and shoot analyses
+
+Linear model carried out to test the effect of species, soil type and irrigation level on the root : shoot ratio values while controlling for total biomass of the individuals. 
+
+```{r ratio model}
+ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil + Dry_weight_total, data = ratio)
+summary(ratio_model1)
+anova(ratio_model1)
+plot(ratio_model1)
+summary(gvlma(ratio_model1))
+```
+
+Linear model carried out to test the effect of dry shoot weight, irrigation level, soil type and species, on the dry root weight of the plants. 
+
+```{r ratio model}
+ratio3 <- ratio %>% filter(!count %in% c(50,67,87,90))  # taking out outliers
+ratio_model2 <- lm(log(Dry_weight_root) ~ log(Dry_weight_shoot) + irrigation_level*soil + species, data = ratio3)
+summary(ratio_model2)
+anova(ratio_model2)
+plot(ratio_model2)
+summary(gvlma(ratio_model2))
+```
+
+## Leaf area analysis
+
+Linear model carried out to test the effect of species, soil type and irrigation level on the leaf area values while controlling for total biomass of the individuals. 
+
+```{r ratio model}
+leaf_area_model <- lm(Leaf_area ~ species + Dry_weight_total + soil*irrigation_level, data = ratio)
+summary(leaf_area_model)
+anova(leaf_area_model)
+plot(leaf_area_model)
+summary(gvlma(leaf_area_model))
+```
+
+## Total biomass analysis
+
+Linear model carried out to test the effect of species, soil type and irrigation level on the total biomass of the individuals. 
+
+```{r ratio model}
+total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
+summary(total_biomass_model)
+anova(total_biomass_model)
+plot(total_biomass_model)
+summary(gvlma(total_biomass_model))
+```
