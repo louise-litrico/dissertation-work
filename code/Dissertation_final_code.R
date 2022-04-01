@@ -9,8 +9,8 @@ library(car)
 library(multcomp)
 
 # Data sets ----
-ratio <- read_excel("root-shoot.xls")
-moisture <- read_excel("moisture.xlsx")
+ratio <- read_excel("data/root-shoot.xls")
+moisture <- read_excel("data/moisture.xlsx")
 
 # Data manipulation moisture ----
 moisture <- moisture %>% 
