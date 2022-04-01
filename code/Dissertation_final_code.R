@@ -7,6 +7,7 @@ library(gvlma)
 library(ggpubr)
 library(car)
 library(multcomp)
+library(viridis)
 
 # Data sets ----
 ratio <- read_excel("data/root-shoot.xls")
@@ -118,9 +119,10 @@ summary(gvlma(leaf_area_model))
 (root_shoot_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = root_shoot)) +
    geom_tile() +
    theme_bw() +
+   scale_fill_viridis(option = "G") +
    ylab("Irrigation level\n") +                             
    xlab("\nSoil Type") +
-   labs(fill='Root : Shoot ratio') +
+   labs(fill='Root:Shoot ratio') +
    theme(axis.text = element_text(size = 12),
          axis.title = element_text(size = 14, face = "plain"),                     
          panel.grid = element_blank(),       
@@ -222,6 +224,7 @@ summary(gvlma(total_biomass_model))
 (biomass_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = Dry_weight_total)) + 
    geom_tile() +
    theme_bw() +
+   scale_fill_viridis() +
    ylab("Irrigation level\n") +                             
    xlab("\nSoil Type") +
    labs(fill='Total biomass (g)') +

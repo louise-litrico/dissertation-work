@@ -425,7 +425,7 @@ biomass_data <- ratio %>%
 (biomass_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = Dry_weight_total)) +
    geom_tile())
 
-# ggsave(biomass_heatmap, file = "outputs/biomass_heatmap.png", width = 12, height = 7) 
+# ggsave(biomass_heatmap, file = "graph_outputs/biomass_heatmap.png", width = 12, height = 7) 
 
 # Plot total biomass and soil types 
 (total_biomass_drought_barplot <- ggplot(ratio, aes(irrigation_level, Dry_weight_total, fill = irrigation_level, color = irrigation_level)) +
