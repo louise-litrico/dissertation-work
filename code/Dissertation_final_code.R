@@ -235,11 +235,10 @@ summary(gvlma(total_biomass_model))
          legend.position = "right"))
 
 # Plot total biomass and soil types 
-(total_biomass_drought_barplot <- ggplot(ratio, aes(irrigation_level, Dry_weight_total, fill = irrigation_level, color = irrigation_level)) +
-    geom_bar(position = position_dodge(), stat = "identity") +
+(total_biomass_drought_boxplot <- ggplot(ratio, aes(irrigation_level, Dry_weight_total, color = irrigation_level)) +
+    geom_boxplot() +
     theme_bw() +
     scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
-    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ species, scales = "fixed") +
     ylab("Total plant biomass (g)\n") +                             
     xlab("\nIrrigation level")  +
@@ -248,4 +247,3 @@ summary(gvlma(total_biomass_model))
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
-
