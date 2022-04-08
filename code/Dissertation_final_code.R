@@ -8,6 +8,8 @@ library(ggpubr)
 library(car)
 library(multcomp)
 library(viridis)
+library(smatr)
+library(lme4)
 
 # Data sets ----
 ratio <- read_excel("data/root-shoot.xls")
@@ -93,22 +95,32 @@ ratio <- ratio %>%
   mutate(shoot_fraction = Dry_weight_shoot/Dry_weight_total, root_fraction = Dry_weight_root/Dry_weight_total) %>% 
   mutate(root_log = log(Dry_weight_root), shoot_log = (log(Dry_weight_shoot)))
  
+# Sample size
+ratio_sample_size <- ratio %>% 
+  group_by(soil,species,irrigation_level) %>% 
+  tally()
+
 # Stats ratio ----
-ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil + Dry_weight_total, data = ratio)
+ratio1 <- ratio %>% filter(!count %in% c(67,90))  # taking out outliers
+ratio_model <- lm(root_shoot ~ irrigation_level*species + soil + Dry_weight_total, data = ratio1)
+summary(ratio_model)
+plot(ratio_model)
+summary(gvlma(ratio_model))
+
+ratio2 <- ratio %>% filter(!count %in% c(50,67,87,90))  # taking out outliers
+ratio_model1 <- lm(log(Dry_weight_root) ~ log(Dry_weight_shoot) + irrigation_level + soil + species, data = ratio2)
 summary(ratio_model1)
-anova(ratio_model1)
 plot(ratio_model1)
 summary(gvlma(ratio_model1))
 
-ratio3 <- ratio %>% filter(!count %in% c(50,67,87,90))  # taking out outliers
-ratio_model2 <- lm(log(Dry_weight_root) ~ log(Dry_weight_shoot) + irrigation_level*soil + species, data = ratio3)
-summary(ratio_model2)
-anova(ratio_model2)
-plot(ratio_model2)
-summary(gvlma(ratio_model2))
+# ratio_model2 <- sma(log(Dry_weight_root) ~ log(Dry_weight_shoot)*irrigation_level, data = ratio2, method = "SMA")
+# summary(ratio_model2)
+# plot(ratio_model2)
+# print(ratio_model2)
 
 # Stats leaf area ----
-leaf_area_model <- lm(Leaf_area ~ species + Dry_weight_total + soil*irrigation_level, data = ratio)
+ratio3 <- ratio %>% filter(!count %in% c(38,84,92))  # taking out outliers
+leaf_area_model <- lm(Leaf_area ~ species + soil + irrigation_level + Dry_weight_total, data = ratio3)
 summary(leaf_area_model)
 anova(leaf_area_model)
 plot(leaf_area_model)
@@ -130,7 +142,7 @@ summary(gvlma(leaf_area_model))
          legend.position = "right"))
 
 # Root/shoot and biomass graph colored by soil 
-(biomass_root_shoot2_graph <- ggplot(ratio, aes(Dry_weight_total, root_shoot)) +
+(biomass_root_shoot2_graph <- ggplot(ratio1, aes(Dry_weight_total, root_shoot)) +
     geom_point(aes(color = soil)) +
     stat_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ x') +
     facet_wrap(~ irrigation_level, scales = "fixed") +
@@ -144,8 +156,16 @@ summary(gvlma(leaf_area_model))
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "right"))
 
+(ratio_model_1_plot <- ggplot(ratio2, aes(x = log(Dry_weight_shoot), y = log(Dry_weight_root), colour = irrigation_level)) +
+    facet_wrap(~species) +
+    geom_point(alpha = 0.5) +
+    theme_classic() +
+    geom_line(data = cbind(ratio, pred = predict(ratio_model1)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+    theme(legend.position = "none",
+          panel.spacing = unit(2, "lines")))
+
 # Boxplot root/shoot and species
-(ratio_species_boxplot <- ggplot(ratio, aes(species, root_shoot)) +
+(ratio_species_boxplot <- ggplot(ratio1, aes(species, root_shoot)) +
     geom_boxplot(aes(color = species)) +
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
@@ -157,7 +177,7 @@ summary(gvlma(leaf_area_model))
           legend.position = "none"))
 
 # Root against shoot for soils 
-(root_shoot_soil_graph <- ggscatter(ratio, x = "shoot_log", y = "root_log", color = "soil", add = "reg.line") +
+(root_shoot_soil_graph <- ggscatter(ratio2, x = "shoot_log", y = "root_log", color = "soil", add = "reg.line") +
     stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = soil)) +
     scale_color_manual('Soil type', values = c("#009E73", "#F0E442", "#0072B2")) +
     theme_bw() +
@@ -171,7 +191,7 @@ summary(gvlma(leaf_area_model))
           legend.position = "right"))
 
 # Roots against shoots for irrigation levels 
-(root_shoot_irrigation_graph <- ggscatter(ratio, x = "shoot_log", y = "root_log", color = "irrigation_level", add = "reg.line") +
+(root_shoot_irrigation_graph <- ggscatter(ratio2, x = "shoot_log", y = "root_log", color = "irrigation_level", add = "reg.line") +
   stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = irrigation_level)) +
   scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
   theme_bw() +
@@ -186,7 +206,7 @@ summary(gvlma(leaf_area_model))
 
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
-(biomass_leaf_ratio_graph <- ggplot(ratio, aes(Dry_weight_total, Leaf_area)) +
+(biomass_leaf_ratio_graph <- ggplot(ratio3, aes(Dry_weight_total, Leaf_area)) +
    geom_point(aes(color = soil)) +
    geom_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ x') +
    theme_bw() +
@@ -201,7 +221,7 @@ summary(gvlma(leaf_area_model))
          legend.position = "right"))
 
 # Boxplot leaf area + species
-(leaf_area_boxplot_species <- ggplot(ratio, aes(species, Leaf_area, color = species)) +
+(leaf_area_boxplot_species <- ggplot(ratio3, aes(species, Leaf_area, color = species)) +
     geom_boxplot() +
     theme_bw() +
     ylab("Leaf area (cm2)\n") +                             
@@ -213,9 +233,8 @@ summary(gvlma(leaf_area_model))
           legend.position = "none"))
 
 # Stats biomass ----
-total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
+total_biomass_model <- lm(Dry_weight_total ~ irrigation_level*soil + species, data = ratio)
 summary(total_biomass_model)
-anova(total_biomass_model)
 plot(total_biomass_model)
 summary(gvlma(total_biomass_model))
 
