@@ -71,6 +71,7 @@ summary(postHocs1)
 (vwc_time_series <- ggplot(moisture, aes(day, mean_moisture, color = irrigation_level)) +
     geom_point() +
     geom_line() +
+    geom_errorbar(aes(ymin=mean_moisture-sd, ymax=mean_moisture+sd, alpha = 0.8)) +
     theme_bw() +
     scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ soil_type, scales = "fixed") +
