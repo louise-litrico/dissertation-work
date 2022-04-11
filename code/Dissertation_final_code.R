@@ -10,6 +10,7 @@ library(multcomp)
 library(viridis)
 library(smatr)
 library(lme4)
+library(writexl)
 
 # Data sets ----
 ratio <- read_excel("data/root-shoot.xls")
@@ -99,7 +100,11 @@ ratio <- ratio %>%
 # Sample size
 ratio_sample_size <- ratio %>% 
   group_by(soil,species,irrigation_level) %>% 
-  tally()
+  tally() %>% 
+  rename(sample_size = n) %>% 
+  mutate(germination_rate = (sample_size*100)/8)
+
+write_xlsx(ratio_sample_size,"data/sample_size.xlsx")
 
 # Stats ratio ----
 ratio1 <- ratio %>% filter(!count %in% c(67,90))  # taking out outliers
