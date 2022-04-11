@@ -158,7 +158,7 @@ summary(gvlma(leaf_area_model))
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
     xlab("\nSpecies")  +
-    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+    theme(axis.text.x = element_text(size = 18),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 18),
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
@@ -183,6 +183,7 @@ summary(gvlma(leaf_area_model))
 
 # Roots against shoots for irrigation levels 
 (root_shoot_irrigation_graph <- ggscatter(ratio2, x = "shoot_log", y = "root_log", color = "irrigation_level", add = "reg.line") +
+  stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = irrigation_level)) +
   scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
   theme_bw() +
   facet_wrap(~ species, scales = "fixed") +
@@ -206,11 +207,12 @@ summary(gvlma(leaf_area_model))
    facet_wrap(~ irrigation_level, scales = "fixed") +
    ylab("Leaf area (cm2)\n") +                             
    xlab("\nTotal biomass (g)")  +
-   theme(axis.text = element_text(size = 12),
-         axis.title = element_text(size = 14, face = "plain"),                     
-         panel.grid = element_blank(),       
-         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-         legend.position = "right"))
+   theme(axis.text.x = element_text(size = 18),  # making the dates at a bit of an angle
+         axis.text.y = element_text(size = 18),
+         axis.title = element_text(size = 20, face = "plain"),                        
+         panel.grid = element_blank(),  
+         plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+         legend.position = "none")) 
 # ggsave(biomass_leaf_ratio_graph, file = "graph_outputs/biomass_leaf_ratio_graph.png", width = 12, height = 7) 
 
 # Boxplot leaf area + species
@@ -219,11 +221,12 @@ summary(gvlma(leaf_area_model))
     theme_bw() +
     ylab("Leaf area (cm2)\n") +                             
     xlab("\nSpecies")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "none"))
+    theme(axis.text.x = element_text(size = 18),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.position = "none")) 
 # ggsave(leaf_area_boxplot_species, file = "graph_outputs/leaf_area_boxplot_species.png", width = 12, height = 7) 
 
 # Stats biomass ----
