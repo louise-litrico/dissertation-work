@@ -168,6 +168,7 @@ summary(gvlma(leaf_area_model))
 
 # Root against shoot for soils 
 (root_shoot_soil_graph <- ggscatter(ratio2, x = "shoot_log", y = "root_log", color = "soil", add = "reg.line") +
+    # stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = soil)) +
     scale_color_manual('Soil type', values = c("#009E73", "#F0E442", "#0072B2")) +
     theme_bw() +
     facet_wrap(~ species, scales = "fixed") +
@@ -178,12 +179,12 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "none")) 
+          legend.position = "bottom")) 
 # ggsave(root_shoot_soil_graph, file = "graph_outputs/root_shoot_soil_graph.png", width = 12, height = 7) 
 
 # Roots against shoots for irrigation levels 
 (root_shoot_irrigation_graph <- ggscatter(ratio2, x = "shoot_log", y = "root_log", color = "irrigation_level", add = "reg.line") +
-  stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = irrigation_level)) +
+  # stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = irrigation_level)) +
   scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
   theme_bw() +
   facet_wrap(~ species, scales = "fixed") +
@@ -194,7 +195,7 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "none")) 
+          legend.position = "bottom")) 
 # ggsave(root_shoot_irrigation_graph, file = "graph_outputs/root_shoot_irrigation_graph.png", width = 12, height = 7) 
 
 # Graphs leaf area ----
