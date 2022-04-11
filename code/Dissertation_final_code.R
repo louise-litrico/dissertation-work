@@ -59,13 +59,13 @@ summary(postHocs1)
     xlab("\nTime (days since start of experiment)") +
     ylab("Volume of water (ml)\n") +
     scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
-    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
-          axis.text.y = element_text(size = 10),
-          axis.title = element_text(size = 12, face = "plain"),                        
+    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.text = element_text(size = 10, face = "italic"),  
-          legend.position = "right")) 
+          legend.position = "none")) 
+# ggsave(irrigation_graph, file = "graph_outputs/irrigation_graph.png", width = 12, height = 7) 
 
 # Graph of VWC across time
 (vwc_time_series <- ggplot(moisture, aes(day, mean_moisture, color = irrigation_level)) +
@@ -76,13 +76,13 @@ summary(postHocs1)
     facet_wrap(~ soil_type, scales = "fixed") +
     ylab("Mean volumetric water content (%)\n") +                             
     xlab("\nTime (days since start of experiment)") +
-    theme(axis.text.x = element_text(size = 10, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
-          axis.text.y = element_text(size = 10),
-          axis.title = element_text(size = 12, face = "plain"),                        
+    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.text = element_text(size = 10, face = "italic"),  
-          legend.position = "right")) 
+          legend.position = "none"))
+# ggsave(vwc_time_series, file = "graph_outputs/vwc_time_series.png", width = 12, height = 7) 
 
 # Data manipulation ratio ----
 ratio <- ratio %>% 
@@ -127,22 +127,8 @@ plot(leaf_area_model)
 summary(gvlma(leaf_area_model))
 
 # Graphs ratio ----
-# Heatmap R/S + soil + drought
-(root_shoot_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = root_shoot)) +
-   geom_tile() +
-   theme_bw() +
-   scale_fill_viridis(option = "G") +
-   ylab("Irrigation level\n") +                             
-   xlab("\nSoil Type") +
-   labs(fill='Root:Shoot ratio') +
-   theme(axis.text = element_text(size = 12),
-         axis.title = element_text(size = 14, face = "plain"),                     
-         panel.grid = element_blank(),       
-         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-         legend.position = "right"))
-
 # Root/shoot and biomass graph colored by soil 
-(biomass_root_shoot2_graph <- ggplot(ratio1, aes(Dry_weight_total, root_shoot)) +
+(biomass_root_shoot_graph <- ggplot(ratio1, aes(Dry_weight_total, root_shoot)) +
     geom_point(aes(color = soil)) +
     stat_smooth(aes(color = soil), se = FALSE, method = "lm", formula = 'y ~ x') +
     facet_wrap(~ irrigation_level, scales = "fixed") +
@@ -150,11 +136,13 @@ summary(gvlma(leaf_area_model))
     scale_color_manual('Soil type', values = c("#009E73", "#F0E442", "#0072B2")) +
     ylab("Root : shoot ratio (g/g)\n") +                             
     xlab("\nTotal biomass (g)")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "right"))
+    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.position = "none")) 
+# ggsave(biomass_root_shoot_graph, file = "graph_outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
 
 (ratio_model_1_plot <- ggplot(ratio2, aes(x = log(Dry_weight_shoot), y = log(Dry_weight_root), colour = irrigation_level)) +
     facet_wrap(~species) +
@@ -170,39 +158,43 @@ summary(gvlma(leaf_area_model))
     theme_bw() +
     ylab("Root/shoot ratio\n") +                             
     xlab("\nSpecies")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "none"))
+    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.position = "none")) 
+# ggsave(ratio_species_boxplot, file = "graph_outputs/ratio_species_boxplot.png", width = 12, height = 7) 
 
 # Root against shoot for soils 
 (root_shoot_soil_graph <- ggscatter(ratio2, x = "shoot_log", y = "root_log", color = "soil", add = "reg.line") +
-    stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = soil)) +
     scale_color_manual('Soil type', values = c("#009E73", "#F0E442", "#0072B2")) +
     theme_bw() +
     facet_wrap(~ species, scales = "fixed") +
     ylab("Plant root biomass (g)\n") +                             
     xlab("\nPlant shoot biomass (g)") +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "right"))
+    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.position = "none")) 
+# ggsave(root_shoot_soil_graph, file = "graph_outputs/root_shoot_soil_graph.png", width = 12, height = 7) 
 
 # Roots against shoots for irrigation levels 
 (root_shoot_irrigation_graph <- ggscatter(ratio2, x = "shoot_log", y = "root_log", color = "irrigation_level", add = "reg.line") +
-  stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = irrigation_level)) +
   scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
   theme_bw() +
   facet_wrap(~ species, scales = "fixed") +
   ylab("Plant root biomass (g)\n") +                             
   xlab("\nPlant shoot biomass (g)") +
-  theme(axis.text = element_text(size = 12),
-        axis.title = element_text(size = 14, face = "plain"),                     
-        panel.grid = element_blank(),       
-        plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-        legend.position = "right"))
+  theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.position = "none")) 
+# ggsave(root_shoot_irrigation_graph, file = "graph_outputs/root_shoot_irrigation_graph.png", width = 12, height = 7) 
 
 # Graphs leaf area ----
 # Graph log leaf area ratio and log biomass
@@ -219,6 +211,7 @@ summary(gvlma(leaf_area_model))
          panel.grid = element_blank(),       
          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
          legend.position = "right"))
+# ggsave(biomass_leaf_ratio_graph, file = "graph_outputs/biomass_leaf_ratio_graph.png", width = 12, height = 7) 
 
 # Boxplot leaf area + species
 (leaf_area_boxplot_species <- ggplot(ratio3, aes(species, Leaf_area, color = species)) +
@@ -231,6 +224,7 @@ summary(gvlma(leaf_area_model))
           panel.grid = element_blank(),       
           plot.margin = unit(c(1,1,1,1), units = , "cm"),  
           legend.position = "none"))
+# ggsave(leaf_area_boxplot_species, file = "graph_outputs/leaf_area_boxplot_species.png", width = 12, height = 7) 
 
 # Stats biomass ----
 total_biomass_model <- lm(Dry_weight_total ~ irrigation_level*soil + species, data = ratio)
@@ -239,20 +233,6 @@ plot(total_biomass_model)
 summary(gvlma(total_biomass_model))
 
 # Graph biomass ----
-# Heatmap biomass + soil + drought
-(biomass_heatmap <- ggplot(ratio, aes(soil, irrigation_level, fill = Dry_weight_total)) + 
-   geom_tile() +
-   theme_bw() +
-   scale_fill_viridis() +
-   ylab("Irrigation level\n") +                             
-   xlab("\nSoil Type") +
-   labs(fill='Total biomass (g)') +
-   theme(axis.text = element_text(size = 12),
-         axis.title = element_text(size = 14, face = "plain"),                     
-         panel.grid = element_blank(),       
-         plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-         legend.position = "right"))
-
 # Plot total biomass and soil types 
 (total_biomass_drought_boxplot <- ggplot(ratio, aes(irrigation_level, Dry_weight_total, color = irrigation_level)) +
     geom_boxplot() +
@@ -261,8 +241,29 @@ summary(gvlma(total_biomass_model))
     facet_wrap(~ species, scales = "fixed") +
     ylab("Total plant biomass (g)\n") +                             
     xlab("\nIrrigation level")  +
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 14, face = "plain"),                     
-          panel.grid = element_blank(),       
-          plot.margin = unit(c(1,1,1,1), units = , "cm"),  
-          legend.position = "none"))
+    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.position = "none")) 
+# ggsave(total_biomass_drought_boxplot, file = "graph_outputs/total_biomass_drought_boxplot.png", width = 12, height = 7) 
+
+# Graph intro ----
+theory <- read_excel("data/theory_graph_data.xlsx") %>% 
+  mutate(type = as_factor(type)) %>% 
+  mutate(shoot_log = log(shoot), root_log = log(root))
+
+(intro_graph <- ggscatter(theory, x = "shoot_log", y = "root_log", color = "type", add = "reg.line") +
+    stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = type)) +
+    theme_bw() +
+    ylab("Plant root biomass (g)\n") +                             
+    xlab("\nPlant shoot biomass (g)") +
+    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+          axis.text.y = element_text(size = 18),
+          axis.title = element_text(size = 20, face = "plain"),                        
+          panel.grid = element_blank(),  
+          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
+          legend.position = "none")) 
+
+ggsave(leaf_area_boxplot_species, file = "graph_outputs/leaf_area_boxplot_species.png", width = 12, height = 7) 
