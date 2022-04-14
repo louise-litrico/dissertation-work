@@ -37,22 +37,21 @@ summary(postHocs1)
 Linear model carried out to test the effect of species, soil type and irrigation level on the root : shoot ratio values while controlling for total biomass of the individuals. 
 
 ```r
-ratio_model1 <- lm(root_shoot ~ irrigation_level*species + soil + Dry_weight_total, data = ratio)
-summary(ratio_model1)
-anova(ratio_model1)
-plot(ratio_model1)
-summary(gvlma(ratio_model1))
+ratio1 <- ratio %>% filter(!count %in% c(67,90))  # taking out outliers
+ratio_model <- lm(root_shoot ~ irrigation_level*species + soil + Dry_weight_total, data = ratio1)
+summary(ratio_model)
+plot(ratio_model)
+summary(gvlma(ratio_model))
 ```
 
 Linear model carried out to test the effect of dry shoot weight, irrigation level, soil type and species, on the dry root weight of the plants. 
 
 ```r
-ratio3 <- ratio %>% filter(!count %in% c(50,67,87,90))  # taking out outliers
-ratio_model2 <- lm(log(Dry_weight_root) ~ log(Dry_weight_shoot) + irrigation_level*soil + species, data = ratio3)
-summary(ratio_model2)
-anova(ratio_model2)
-plot(ratio_model2)
-summary(gvlma(ratio_model2))
+ratio2 <- ratio %>% filter(!count %in% c(50,67,87,90))  # taking out outliers
+ratio_model1 <- lm(log(Dry_weight_root) ~ log(Dry_weight_shoot) + irrigation_level + soil + species, data = ratio2)
+summary(ratio_model1)
+plot(ratio_model1)
+summary(gvlma(ratio_model1))
 ```
 
 ## Leaf area analysis
@@ -60,9 +59,9 @@ summary(gvlma(ratio_model2))
 Linear model carried out to test the effect of species, soil type and irrigation level on the leaf area values while controlling for total biomass of the individuals. 
 
 ```r 
-leaf_area_model <- lm(Leaf_area ~ species + Dry_weight_total + soil*irrigation_level, data = ratio)
+ratio3 <- ratio %>% filter(!count %in% c(38,84,92))  # taking out outliers
+leaf_area_model <- lm(Leaf_area ~ species + soil + irrigation_level + Dry_weight_total, data = ratio3)
 summary(leaf_area_model)
-anova(leaf_area_model)
 plot(leaf_area_model)
 summary(gvlma(leaf_area_model))
 ```
@@ -72,9 +71,8 @@ summary(gvlma(leaf_area_model))
 Linear model carried out to test the effect of species, soil type and irrigation level on the total biomass of the individuals. 
 
 ```r
-total_biomass_model <- lm(Dry_weight_total ~ species + irrigation_level*soil, data = ratio)
+total_biomass_model <- lm(Dry_weight_total ~ irrigation_level*soil + species, data = ratio)
 summary(total_biomass_model)
-anova(total_biomass_model)
 plot(total_biomass_model)
 summary(gvlma(total_biomass_model))
 ```
