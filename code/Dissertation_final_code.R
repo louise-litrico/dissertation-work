@@ -258,22 +258,3 @@ summary(gvlma(total_biomass_model))
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
           legend.position = "none")) 
 # ggsave(total_biomass_drought_boxplot, file = "graph_outputs/total_biomass_drought_boxplot.png", width = 12, height = 7) 
-
-# Graph intro ----
-theory <- read_excel("data/theory_graph_data.xlsx") %>% 
-  mutate(type = as_factor(type)) %>% 
-  mutate(shoot_log = log(shoot), root_log = log(root))
-
-(intro_graph <- ggscatter(theory, x = "shoot_log", y = "root_log", color = "type", add = "reg.line") +
-    stat_regline_equation(aes(label =  paste(..eq.label.., ..rr.label.., sep = "~~~~"), color = type)) +
-    theme_bw() +
-    ylab("Plant root biomass (g)\n") +                             
-    xlab("\nPlant shoot biomass (g)") +
-    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
-          axis.text.y = element_text(size = 18),
-          axis.title = element_text(size = 20, face = "plain"),                        
-          panel.grid = element_blank(),  
-          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "none")) 
-
-ggsave(leaf_area_boxplot_species, file = "graph_outputs/leaf_area_boxplot_species.png", width = 12, height = 7) 
