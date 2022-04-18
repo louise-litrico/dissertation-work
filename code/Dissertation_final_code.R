@@ -177,7 +177,7 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "bottom")) 
+          legend.position = "none")) 
 # ggsave(root_shoot_soil_graph, file = "graph_outputs/root_shoot_soil_graph.png", width = 12, height = 7) 
 
 # Roots against shoots for irrigation levels 
@@ -193,7 +193,7 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "bottom")) 
+          legend.position = "none")) 
 # ggsave(root_shoot_irrigation_graph, file = "graph_outputs/root_shoot_irrigation_graph.png", width = 12, height = 7) 
 
 # Graphs leaf area ----
