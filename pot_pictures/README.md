@@ -1,0 +1,2 @@
+Each picture in this folder is one pot from the experiment. There are 18 pots even though only 9 were included in the final dataset and in the report because the other half were supposed to be used to measure essential oil contents but none were found. 
+The labels in each pot make it possible to distinguish which were used and wich were not. Pots with a 4, 5 or 6 on the label are not included in the analyzed data. 
