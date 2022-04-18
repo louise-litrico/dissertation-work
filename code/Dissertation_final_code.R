@@ -60,7 +60,7 @@ summary(postHocs1)
     xlab("\nTime (days since start of experiment)") +
     ylab("Volume of water (ml)\n") +
     scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
-    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+    theme(axis.text.x = element_text(size = 18,  vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 18),
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
@@ -78,7 +78,7 @@ summary(postHocs1)
     facet_wrap(~ soil_type, scales = "fixed") +
     ylab("Mean volumetric water content (%)\n") +                             
     xlab("\nTime (days since start of experiment)") +
-    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+    theme(axis.text.x = element_text(size = 18, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 18),
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
@@ -150,14 +150,6 @@ summary(gvlma(leaf_area_model))
           legend.position = "none")) 
 # ggsave(biomass_root_shoot_graph, file = "graph_outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
 
-(ratio_model_1_plot <- ggplot(ratio2, aes(x = log(Dry_weight_shoot), y = log(Dry_weight_root), colour = irrigation_level)) +
-    facet_wrap(~species) +
-    geom_point(alpha = 0.5) +
-    theme_classic() +
-    geom_line(data = cbind(ratio, pred = predict(ratio_model1)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
-    theme(legend.position = "none",
-          panel.spacing = unit(2, "lines")))
-
 # Boxplot root/shoot and species
 (ratio_species_boxplot <- ggplot(ratio1, aes(species, root_shoot)) +
     geom_boxplot(aes(color = species)) +
@@ -180,7 +172,7 @@ summary(gvlma(leaf_area_model))
     facet_wrap(~ species, scales = "fixed") +
     ylab("Plant root biomass (g)\n") +                             
     xlab("\nPlant shoot biomass (g)") +
-    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+    theme(axis.text.x = element_text(size = 18, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 18),
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
@@ -196,7 +188,7 @@ summary(gvlma(leaf_area_model))
   facet_wrap(~ species, scales = "fixed") +
   ylab("Plant root biomass (g)\n") +                             
   xlab("\nPlant shoot biomass (g)") +
-  theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+  theme(axis.text.x = element_text(size = 18, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 18),
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
@@ -214,7 +206,7 @@ summary(gvlma(leaf_area_model))
    facet_wrap(~ irrigation_level, scales = "fixed") +
    ylab("Leaf area (cm2)\n") +                             
    xlab("\nTotal biomass (g)")  +
-   theme(axis.text.x = element_text(size = 18),  # making the dates at a bit of an angle
+   theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
          axis.text.y = element_text(size = 18),
          axis.title = element_text(size = 20, face = "plain"),                        
          panel.grid = element_blank(),  
@@ -251,7 +243,7 @@ summary(gvlma(total_biomass_model))
     facet_wrap(~ species, scales = "fixed") +
     ylab("Total plant biomass (g)\n") +                             
     xlab("\nIrrigation level")  +
-    theme(axis.text.x = element_text(size = 18, angle = 45, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
+    theme(axis.text.x = element_text(size = 18, vjust = 1, hjust = 1),  # making the dates at a bit of an angle
           axis.text.y = element_text(size = 18),
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
