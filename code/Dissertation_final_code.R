@@ -70,7 +70,7 @@ summary(postHocs1)
 (vwc_time_series <- ggplot(moisture, aes(day, mean_moisture, color = irrigation_level)) +
     geom_point() +
     geom_line() +
-    geom_errorbar(aes(ymin=mean_moisture-sd, ymax=mean_moisture+sd, alpha = 0.8)) +
+    geom_errorbar(aes(ymin=mean_moisture-sd, ymax=mean_moisture+sd)) +
     theme_bw() +
     scale_color_manual('Irrigation level', values = c("#999999", "#E69F00", "#56B4E9")) +
     facet_wrap(~ soil_type, scales = "fixed") +
@@ -81,7 +81,7 @@ summary(postHocs1)
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "none"))
+          legend.position = "right"))
 # ggsave(vwc_time_series, file = "graph_outputs/vwc_time_series.png", width = 12, height = 7) 
 
 # Data manipulation ratio ----
