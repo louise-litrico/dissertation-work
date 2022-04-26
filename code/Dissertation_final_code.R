@@ -7,9 +7,7 @@ library(gvlma)
 library(ggpubr)
 library(car)
 library(multcomp)
-library(viridis)
 library(smatr)
-library(lme4)
 library(writexl)
 
 # Data sets ----
@@ -147,7 +145,7 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "none")) 
+          legend.position = "right")) 
 # ggsave(biomass_root_shoot_graph, file = "graph_outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
 
 # Boxplot root/shoot and species
@@ -177,7 +175,7 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "none")) 
+          legend.position = "right")) 
 # ggsave(root_shoot_soil_graph, file = "graph_outputs/root_shoot_soil_graph.png", width = 12, height = 7) 
 
 # Roots against shoots for irrigation levels 
@@ -193,7 +191,7 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "none")) 
+          legend.position = "right")) 
 # ggsave(root_shoot_irrigation_graph, file = "graph_outputs/root_shoot_irrigation_graph.png", width = 12, height = 7) 
 
 # Graphs leaf area ----
@@ -211,7 +209,7 @@ summary(gvlma(leaf_area_model))
          axis.title = element_text(size = 20, face = "plain"),                        
          panel.grid = element_blank(),  
          plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-         legend.position = "none")) 
+         legend.position = "right")) 
 # ggsave(biomass_leaf_ratio_graph, file = "graph_outputs/biomass_leaf_ratio_graph.png", width = 12, height = 7) 
 
 # Boxplot leaf area + species
