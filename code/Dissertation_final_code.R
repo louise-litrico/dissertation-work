@@ -134,7 +134,7 @@ summary(gvlma(leaf_area_model))
 # Root/shoot and biomass graph colored by soil 
 (biomass_root_shoot_graph <- ggplot(ratio1, aes(Dry_weight_total, root_shoot)) +
     geom_point(aes(color = soil)) +
-    stat_smooth(aes(color = soil, fill = soil), method = "lm", formula = 'y ~ x') +
+    stat_smooth(aes(color = soil, fill = soil), se = FALSE, method = "lm", formula = 'y ~ x') +
     facet_wrap(~ irrigation_level, scales = "fixed") +
     theme_bw() +
     scale_color_manual('Soil type', values = c("#009E73", "#F0E442", "#0072B2")) +
@@ -146,7 +146,7 @@ summary(gvlma(leaf_area_model))
           axis.title = element_text(size = 20, face = "plain"),                        
           panel.grid = element_blank(),  
           plot.margin = unit(c(0.5,0.5,0.5,0.5), units = , "cm"),  # Adding a margin around the plot
-          legend.position = "right")) 
+          legend.position = "bottom")) 
 # ggsave(biomass_root_shoot_graph, file = "graph_outputs/biomass_root_shoot_graph.png", width = 12, height = 7) 
 
 # Boxplot root/shoot and species
